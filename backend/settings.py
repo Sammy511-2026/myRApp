@@ -13,13 +13,27 @@ SECRET_KEY = os.getenv("SECRET_KEY", DEVELOPMENT_SECRET_KEY)
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 if not DEBUG and SECRET_KEY == DEVELOPMENT_SECRET_KEY:
     raise ImproperlyConfigured("Set a unique SECRET_KEY in the environment before running with DEBUG=False.")
-ALLOWED_HOSTS = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")]
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost,.up.railway.app").split(",")
+    if h.strip()
+]
+RAILWAY_PUBLIC_DOMAIN = os.getenv("RAILWAY_PUBLIC_DOMAIN")
+if RAILWAY_PUBLIC_DOMAIN and RAILWAY_PUBLIC_DOMAIN not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
 
 # Useful for local dev with 127.0.0.1/localhost
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
 ]
+CSRF_TRUSTED_ORIGINS.extend(
+    origin.strip()
+    for origin in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
+)
+if RAILWAY_PUBLIC_DOMAIN:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RAILWAY_PUBLIC_DOMAIN}")
 
 INSTALLED_APPS = [
     "jazzmin",  # keep first
@@ -47,6 +61,7 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -54,6 +69,11 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
 ROOT_URLCONF = "backend.urls"
 
@@ -79,11 +99,11 @@ WSGI_APPLICATION = "backend.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.getenv("DB_NAME", "RPNGC"),
-        "USER": os.getenv("DB_USER", "root"),
-        "PASSWORD": os.getenv("DB_PASSWORD", ""),
-        "HOST": os.getenv("DB_HOST", "127.0.0.1"),
-        "PORT": os.getenv("DB_PORT", "3306"),
+        "NAME": os.getenv("DB_NAME", os.getenv("MYSQLDATABASE", "RPNGC")),
+        "USER": os.getenv("DB_USER", os.getenv("MYSQLUSER", "root")),
+        "PASSWORD": os.getenv("DB_PASSWORD", os.getenv("MYSQLPASSWORD", "")),
+        "HOST": os.getenv("DB_HOST", os.getenv("MYSQLHOST", "127.0.0.1")),
+        "PORT": os.getenv("DB_PORT", os.getenv("MYSQLPORT", "3306")),
         "OPTIONS": {
             "charset": "utf8mb4",
         },
@@ -100,9 +120,17 @@ LOGOUT_REDIRECT_URL = "recruitment:landing"
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]       # dev/global static
 STATIC_ROOT = BASE_DIR / "static_root"         # collectstatic target
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = Path(os.getenv("MEDIA_ROOT", str(BASE_DIR / "media")))
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

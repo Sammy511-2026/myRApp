@@ -85,6 +85,52 @@ Keep Django migrations as the schema source of truth; do not separately edit
 application tables in Workbench. Use Workbench's reverse-engineering/export
 features if you need a SQL snapshot of the migrated schema.
 
+## Deploying to Railway
+
+The project can run on Railway using its Django web-service and MySQL database
+services. The app uses `gunicorn` for production HTTP serving and WhiteNoise for
+collected static assets. Keep applicant uploads on persistent storage; Railway's
+service filesystem is ephemeral without a volume.
+
+1. In Railway, create a project and deploy this GitHub repository as a web
+   service. Add a Railway MySQL database service to the same project.
+2. In the web service settings, set the build command to
+   `python manage.py collectstatic --noinput`. Set
+   `RAILPACK_DJANGO_APP_NAME=backend.wsgi`; Railpack detects Django, runs
+   migrations, and starts Gunicorn using this WSGI application.
+3. Add these variables to the web service. Replace `MySQL` in the reference
+   expressions if the database service has a different Railway service name:
+
+   ```text
+   RAILPACK_DJANGO_APP_NAME=backend.wsgi
+   SECRET_KEY=<generate-a-unique-secret>
+   DEBUG=False
+   DB_NAME=${{MySQL.MYSQLDATABASE}}
+   DB_USER=${{MySQL.MYSQLUSER}}
+   DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
+   DB_HOST=${{MySQL.MYSQLHOST}}
+   DB_PORT=${{MySQL.MYSQLPORT}}
+   MEDIA_ROOT=/app/media
+   ```
+
+   Generate a Django secret locally with
+   `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`
+   and enter it directly in Railway's Variables UI. Never commit it to this
+   repository. The settings automatically allow Railway-provided
+   `*.up.railway.app` hosts and trust the configured `RAILWAY_PUBLIC_DOMAIN`
+   origin.
+4. Attach a Railway volume to the web service mounted at `/app/media`. This
+   preserves applicant photos and uploaded documents across redeploys.
+   Production media URLs require login and allow applicants to access their own
+   files while recruitment staff can access applicant files. Keep the web
+   service at one replica when using a single local media volume.
+5. Generate a public domain in the service's **Settings → Networking**. Then
+   confirm the deployment is healthy and test registration, login, application
+   workflows, uploaded files, static assets, and the `/api/v1/` endpoints.
+6. Configure regular database backups and restrict production database access.
+   The provided local PostgreSQL archive is not used by Railway MySQL; do not
+   import it without a separate, validated migration plan.
+
 The existing case-insensitive NID constraint is conditional (it excludes
 blank values), which MySQL does not enforce as a partial unique index. Resolve
 that constraint for the chosen MySQL version before relying on database-level

@@ -1,14 +1,18 @@
 from __future__ import annotations
 
+import mimetypes
 from datetime import date
+from pathlib import PurePosixPath
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
+from django.core.files.storage import default_storage
 from django.core.files.images import get_image_dimensions
 from django.db import transaction
-from django.http import HttpResponse, JsonResponse
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect, resolve_url
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -24,6 +28,7 @@ from .models import (
     RecruitmentCycle,
     Application,
     Document,
+    FinalSelection,
     Notification,
 )
 
@@ -130,6 +135,82 @@ def district_choices(request):
         "province": province.name,
         "districts": [{"id": district.pk, "name": district.name} for district in districts],
     })
+
+
+@login_required
+def protected_media(request, path: str):
+    parts = PurePosixPath(path).parts
+    if (
+        not path
+        or path.startswith("/")
+        or "\\" in path
+        or any(part in (".", "..") for part in parts)
+    ):
+        raise Http404
+
+    is_staff_viewer = request.user.is_superuser or request.user.role in (
+        User.Roles.OFFICER,
+        User.Roles.ADMIN,
+    )
+    is_owner = False
+
+    if len(parts) >= 4 and parts[0] == "applicants" and parts[1].isdecimal():
+        applicant_user_id = int(parts[1])
+        if parts[2] == "photo":
+            is_owner = (
+                request.user.pk == applicant_user_id
+                and ApplicantProfile.objects.filter(
+                    user_id=applicant_user_id,
+                    photo=path,
+                ).exists()
+            )
+        elif parts[2] == "docs":
+            is_owner = Document.objects.filter(
+                applicant_id=applicant_user_id,
+                applicant__user_id=request.user.pk,
+                file=path,
+            ).exists()
+    elif (
+        len(parts) >= 4
+        and parts[0] == "users"
+        and parts[1].isdecimal()
+        and parts[2] == "profile"
+    ):
+        user_id = int(parts[1])
+        is_owner = (
+            request.user.pk == user_id
+            and User.objects.filter(pk=user_id, profile_photo=path).exists()
+        )
+    elif len(parts) >= 3 and parts[0] == "offers" and parts[1].isdecimal():
+        application_id = int(parts[1])
+        is_owner = (
+            Application.objects.filter(
+                pk=application_id,
+                applicant__user=request.user,
+            ).exists()
+            and FinalSelection.objects.filter(
+                application_id=application_id,
+                offer_letter=path,
+            ).exists()
+        )
+
+    if not (is_owner or is_staff_viewer):
+        raise Http404
+
+    try:
+        media_file = default_storage.open(path, "rb")
+    except FileNotFoundError as exc:
+        raise Http404 from exc
+
+    content_type = mimetypes.guess_type(path)[0] or "application/octet-stream"
+    response = FileResponse(
+        media_file,
+        content_type=content_type,
+        as_attachment=not content_type.startswith("image/"),
+    )
+    response["Cache-Control"] = "private, no-store"
+    response["X-Content-Type-Options"] = "nosniff"
+    return response
 
 
 # -------------------------------------------------------------------
