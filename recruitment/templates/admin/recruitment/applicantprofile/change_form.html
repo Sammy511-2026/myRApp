@@ -1,0 +1,198 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+  {% if current_app %}
+    <style>
+      .applicant-review{margin-bottom:18px;color:#26364a}
+      .applicant-review__card{margin:0 0 12px;padding:16px 18px;border:1px solid #dce3ec;border-radius:10px;background:#fff}
+      .applicant-review h2{margin:0 0 12px;color:#0b2344;font-size:17px}
+      .applicant-review h3{margin:16px 0 8px;color:#244263;font-size:14px}
+      .applicant-review__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:9px 18px}
+      .applicant-review__item{overflow-wrap:anywhere}
+      .applicant-review__item strong{color:#43566d}
+      .applicant-review__actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+      .applicant-review__actions form{margin:0}
+      .applicant-review__table-wrap{overflow-x:auto}
+      .applicant-review table{width:100%;border-collapse:collapse}
+      .applicant-review th,.applicant-review td{padding:8px;border:1px solid #e1e7ef;text-align:left;vertical-align:top}
+      .applicant-review th{background:#f4f7fa;color:#28445f}
+      .applicant-review details{margin-top:12px}
+      .applicant-review summary{cursor:pointer;color:#0f3b6d;font-weight:700}
+      .applicant-review__muted{color:#64748b}
+      .applicant-review__status{display:inline-block;padding:3px 9px;border-radius:999px;background:#e8eef6;color:#183653;font-weight:700}
+      .applicant-review__eligibility{padding:10px 12px;border-radius:8px;background:#f5f8fb}
+      @media(max-width:700px){.applicant-review__card{padding:13px}}
+    </style>
+    <div class="applicant-review">
+      <section class="applicant-review__card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
+          <div>
+            <h2>Applicant profile and application review</h2>
+            <span class="applicant-review__status">{{ current_app.get_status_display }}</span>
+            <span class="applicant-review__muted">{{ current_app.cycle }}</span>
+          </div>
+          <div class="applicant-review__actions">
+            <a class="button" href="{% url 'rpngc_admin:recruitment_applicantprofile_print' original.pk %}" target="_blank" rel="noopener">Print / Export dossier</a>
+            {% if can_change_application %}
+              <form method="post" action="{% url 'rpngc_admin:recruitment_applicantprofile_application_action' original.pk 'shortlist' %}">
+                {% csrf_token %}<button type="submit" class="button default">Shortlist</button>
+              </form>
+              <form method="post" action="{% url 'rpngc_admin:recruitment_applicantprofile_application_action' original.pk 'approve' %}">
+                {% csrf_token %}<button type="submit" class="button button-primary">Approve</button>
+              </form>
+              <form method="post" action="{% url 'rpngc_admin:recruitment_applicantprofile_application_action' original.pk 'reject' %}">
+                {% csrf_token %}<button type="submit" class="button deletelink">Reject</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+
+        <h3>Applicant details</h3>
+        <div class="applicant-review__grid">
+          <div class="applicant-review__item"><strong>Full name:</strong> {{ original.full_name }}</div>
+          <div class="applicant-review__item"><strong>Username:</strong> {{ original.user.username }}</div>
+          <div class="applicant-review__item"><strong>Date of birth / age:</strong> {{ original.dob|date:"M j, Y" }} / {{ original.age|default:"—" }}</div>
+          <div class="applicant-review__item"><strong>Gender:</strong> {{ original.get_gender_display }}</div>
+          <div class="applicant-review__item"><strong>NID / passport:</strong> {{ original.nid_number|default:"—" }}</div>
+          <div class="applicant-review__item"><strong>Email:</strong> {{ original.email|default:"—" }}</div>
+          <div class="applicant-review__item"><strong>Phone:</strong> {{ original.phone|default:"—" }}</div>
+          <div class="applicant-review__item"><strong>Residence:</strong> {{ original.province|default:"—" }}{% if original.district %}, {{ original.district }}{% endif %}</div>
+          <div class="applicant-review__item"><strong>Province of origin:</strong> {{ original.province_of_origin|default:"—" }}</div>
+          <div class="applicant-review__item"><strong>Highest education level:</strong> {{ original.get_highest_education_level_display }}</div>
+        </div>
+
+        <h3>Application details</h3>
+        <div class="applicant-review__grid">
+          <div class="applicant-review__item"><strong>Recruitment cycle:</strong> {{ current_app.cycle }}</div>
+          <div class="applicant-review__item"><strong>Status:</strong> {{ current_app.get_status_display }}</div>
+          <div class="applicant-review__item"><strong>Submitted:</strong> {{ current_app.submitted_at|date:"M j, Y g:i a"|default:"Not submitted (draft)" }}</div>
+          <div class="applicant-review__item"><strong>Last updated:</strong> {{ current_app.last_updated|date:"M j, Y g:i a" }}</div>
+          <div class="applicant-review__item"><strong>Applied unit:</strong> {{ current_app.applied_unit|default:"—" }}</div>
+          <div class="applicant-review__item"><strong>From Bougainville:</strong> {{ current_app.from_bougainville|yesno:"Yes,No" }}</div>
+          <div class="applicant-review__item"><strong>Work experience:</strong> {{ current_app.get_years_experience_display|default:"—" }}{% if current_app.years_experience_other %} — {{ current_app.years_experience_other }}{% endif %}</div>
+          <div class="applicant-review__item"><strong>Reservist 2021–2022:</strong> {{ current_app.reservist_2021_2022|yesno:"Yes,No" }}</div>
+          <div class="applicant-review__item"><strong>Criminal conviction:</strong> {% if current_app.criminal_conviction == True %}Yes{% elif current_app.criminal_conviction == False %}No{% else %}Not answered{% endif %}</div>
+          <div class="applicant-review__item"><strong>Declaration agreed:</strong> {{ current_app.declaration_agreed|yesno:"Yes,No" }}</div>
+          <div class="applicant-review__item"><strong>Applicant signature:</strong> {{ current_app.signature_name|default:"—" }}</div>
+          <div class="applicant-review__item"><strong>Signature date:</strong> {{ current_app.signature_date|date:"M j, Y"|default:"—" }}</div>
+          <div class="applicant-review__item"><strong>Automated score:</strong> {{ current_app.auto_screen_score }}</div>
+          <div class="applicant-review__item"><strong>Manual adjustment:</strong> {{ current_app.manual_adjustment }}</div>
+          <div class="applicant-review__item"><strong>Total score:</strong> {{ current_app.total_score }}</div>
+          <div class="applicant-review__item"><strong>Eligibility passed:</strong> {{ current_app.eligibility_passed|yesno:"Yes,No" }}</div>
+          {% if current_app.reason_for_applying %}
+            <div class="applicant-review__item" style="grid-column:1/-1"><strong>Reason for applying:</strong><br>{{ current_app.reason_for_applying|linebreaksbr }}</div>
+          {% endif %}
+          {% if current_app.disqualification_reason %}
+            <div class="applicant-review__item" style="grid-column:1/-1"><strong>Disqualification reason:</strong><br>{{ current_app.disqualification_reason|linebreaksbr }}</div>
+          {% endif %}
+        </div>
+
+        <h3>Eligibility review</h3>
+        {% if current_elig %}
+          <div class="applicant-review__eligibility">
+            <strong>{{ current_elig.get_result_display }}</strong> ·
+            Age: {{ current_elig.age_ok|yesno:"Pass,Fail" }} ·
+            Education: {{ current_elig.education_ok|yesno:"Pass,Fail" }} ·
+            Medical: {{ current_elig.medical_ok|yesno:"Pass,Fail" }} ·
+            Police: {{ current_elig.police_ok|yesno:"Pass,Fail" }} ·
+            Duplicates: {{ current_elig.duplicates_ok|yesno:"Pass,Fail" }}
+            <div class="applicant-review__muted">Checked {{ current_elig.run_at|date:"M j, Y g:i a" }}{% if current_elig.details %} · {{ current_elig.details }}{% endif %}</div>
+          </div>
+        {% else %}
+          <p class="applicant-review__muted">Eligibility has not been calculated.</p>
+        {% endif %}
+
+        <details open>
+          <summary>Required documents ({{ current_app_docs|length }})</summary>
+          <div class="applicant-review__table-wrap">
+            <table>
+              <thead><tr><th>Document</th><th>File</th><th>Verification</th><th>Verified by</th><th>Note</th><th>Staff action</th></tr></thead>
+              <tbody>
+                {% for document in current_app_docs %}
+                  <tr>
+                    <td>{{ document.get_doc_type_display }}</td>
+                    <td>{% if document.file %}<a href="{{ document.file.url }}" target="_blank" rel="noopener">Open uploaded file</a>{% else %}Missing{% endif %}</td>
+                    <td>{{ document.get_verify_status_display }}</td>
+                    <td>{{ document.verified_by|default:"—" }}</td>
+                    <td>{{ document.verification_note|default:"—" }}</td>
+                    <td><a href="{% url 'rpngc_admin:recruitment_document_change' document.pk %}">Review / verify</a></td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="6"><em>No documents uploaded.</em></td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details open>
+          <summary>Education records ({{ current_app_education|length }})</summary>
+          <div class="applicant-review__table-wrap"><table>
+            <thead><tr><th>Level</th><th>Institution</th><th>Province</th><th>Start</th><th>End</th><th>GPA</th><th>Grades</th></tr></thead>
+            <tbody>{% for record in current_app_education %}
+              <tr>
+                <td>{{ record.get_level_display }}</td><td>{{ record.institution|default:"—" }}</td><td>{{ record.province|default:"—" }}</td>
+                <td>{{ record.start_date|date:"M j, Y"|default:"—" }}</td><td>{{ record.end_date|date:"M j, Y"|default:"—" }}</td><td>{{ record.gpa|default:"—" }}</td>
+                <td>English {{ record.english_grade|default:"—" }} · Mathematics {{ record.mathematics_grade|default:"—" }} · Science {{ record.science_grade|default:"—" }} · Other {{ record.other_grade|default:"—" }}</td>
+              </tr>
+            {% empty %}<tr><td colspan="7"><em>No education records.</em></td></tr>{% endfor %}</tbody>
+          </table></div>
+        </details>
+
+        <details>
+          <summary>Work history ({{ current_app_work|length }})</summary>
+          <div class="applicant-review__table-wrap"><table>
+            <thead><tr><th>Employer</th><th>Position</th><th>Start</th><th>End</th><th>Duties</th></tr></thead>
+            <tbody>{% for record in current_app_work %}
+              <tr><td>{{ record.employer }}</td><td>{{ record.position|default:"—" }}</td><td>{{ record.start_date|date:"M j, Y"|default:"—" }}</td><td>{{ record.end_date|date:"M j, Y"|default:"—" }}</td><td>{{ record.duties|default:"—"|linebreaksbr }}</td></tr>
+            {% empty %}<tr><td colspan="5"><em>No work history.</em></td></tr>{% endfor %}</tbody>
+          </table></div>
+        </details>
+
+        <details>
+          <summary>Alternative contacts ({{ current_app_contacts|length }})</summary>
+          <div class="applicant-review__table-wrap"><table>
+            <thead><tr><th>Name</th><th>Relationship</th><th>Phone</th><th>Address</th></tr></thead>
+            <tbody>{% for record in current_app_contacts %}
+              <tr><td>{{ record.name }}</td><td>{{ record.relationship|default:"—" }}</td><td>{{ record.phone|default:"—" }}</td><td>{{ record.address|default:"—" }}</td></tr>
+            {% empty %}<tr><td colspan="4"><em>No alternative contacts.</em></td></tr>{% endfor %}</tbody>
+          </table></div>
+        </details>
+
+        <details>
+          <summary>Parents and guardians ({{ current_app_parents|length }})</summary>
+          <div class="applicant-review__table-wrap"><table>
+            <thead><tr><th>Relationship</th><th>Name</th><th>Phone</th><th>Address</th><th>Alive</th></tr></thead>
+            <tbody>{% for record in current_app_parents %}
+              <tr><td>{{ record.get_kind_display }}</td><td>{{ record.name }}</td><td>{{ record.phone|default:"—" }}</td><td>{{ record.address|default:"—" }}</td><td>{{ record.is_alive|yesno:"Yes,No" }}</td></tr>
+            {% empty %}<tr><td colspan="5"><em>No parent / guardian details.</em></td></tr>{% endfor %}</tbody>
+          </table></div>
+        </details>
+
+        <details>
+          <summary>References ({{ current_app_references|length }})</summary>
+          <div class="applicant-review__table-wrap"><table>
+            <thead><tr><th>Name</th><th>Position</th><th>Phone</th><th>Email</th></tr></thead>
+            <tbody>{% for record in current_app_references %}
+              <tr><td>{{ record.name }}</td><td>{{ record.position_title|default:"—" }}</td><td>{{ record.phone_number|default:"—" }}</td><td>{{ record.email|default:"—" }}</td></tr>
+            {% empty %}<tr><td colspan="4"><em>No references.</em></td></tr>{% endfor %}</tbody>
+          </table></div>
+        </details>
+
+        <details>
+          <summary>Screening actions ({{ current_app_screening_actions|length }})</summary>
+          <div class="applicant-review__table-wrap"><table>
+            <thead><tr><th>Date</th><th>Staff member</th><th>Auto score</th><th>Adjustment</th><th>Reason / action</th></tr></thead>
+            <tbody>{% for action in current_app_screening_actions %}
+              <tr><td>{{ action.created_at|date:"M j, Y g:i a" }}</td><td>{{ action.by_user|default:"—" }}</td><td>{{ action.auto_score }}</td><td>{{ action.manual_adjustment }}</td><td>{{ action.reason|default:"—"|linebreaksbr }}</td></tr>
+            {% empty %}<tr><td colspan="5"><em>No screening actions recorded.</em></td></tr>{% endfor %}</tbody>
+          </table></div>
+        </details>
+      </section>
+      <p class="applicant-review__muted">Use the editable applicant and related-record forms below to update profile details, records, document verification, and application status.</p>
+    </div>
+  {% endif %}
+
+  {{ block.super }}
+{% endblock %}

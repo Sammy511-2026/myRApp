@@ -1,0 +1,144 @@
+{# templates/admin/app_list.html #}
+{% extends "admin/app_list.html" %}
+{# This wraps the model list for each app in accordion-style groups #}
+
+{% load i18n admin_urls static %}
+
+{% block content %}
+  {% if app_list %}
+    {% for app in app_list %}
+      <section class="rp-accordion">
+        <header class="rp-accordion__header">
+          <span class="rp-accordion__title">
+            {% if app.app_url %}<a href="{{ app.app_url }}">{{ app.name }}</a>{% else %}{{ app.name }}{% endif %}
+          </span>
+          <button type="button" class="rp-accordion__toggle" aria-expanded="true" data-rp-accordion-button>
+            ▼
+          </button>
+        </header>
+
+        <div class="rp-accordion__body" data-rp-accordion-body>
+          {% if app.app_label == "recruitment" %}
+            {# --------- Group 1: Applicant Records --------- #}
+            <div class="rp-group">
+              <div class="rp-group__heading"><i class="fas fa-user"></i> Applicant Records</div>
+              <ul class="rp-linkgrid">
+                {% for model in app.models %}
+                  {% if model.object_name in "Province District ApplicantProfile AlternativeContact ParentGuardian EducationRecord WorkHistory Reference Document"|split:" " %}
+                    <li>
+                      {% if model.admin_url %}<a href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}{{ model.name }}{% endif %}
+                      {% if model.add_url %}<a href="{{ model.add_url }}" class="rp-add">Add</a>{% endif %}
+                    </li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            </div>
+
+            {# --------- Group 2: Recruitment Workflow --------- #}
+            <div class="rp-group">
+              <div class="rp-group__heading"><i class="fas fa-cogs"></i> Recruitment Workflow</div>
+              <ul class="rp-linkgrid">
+                {% for model in app.models %}
+                  {% if model.object_name in "RecruitmentCycle Application ApplicationEligibility ScreeningAction"|split:" " %}
+                    <li>
+                      {% if model.admin_url %}<a href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}{{ model.name }}{% endif %}
+                      {% if model.add_url %}<a href="{{ model.add_url }}" class="rp-add">Add</a>{% endif %}
+                    </li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            </div>
+
+            {# --------- Group 3: Testing --------- #}
+            <div class="rp-group">
+              <div class="rp-group__heading"><i class="fas fa-clipboard-list"></i> Testing</div>
+              <ul class="rp-linkgrid">
+                {% for model in app.models %}
+                  {% if model.object_name in "Test Question Choice TestAttempt AttemptAnswer"|split:" " %}
+                    <li>
+                      {% if model.admin_url %}<a href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}{{ model.name }}{% endif %}
+                      {% if model.add_url %}<a href="{{ model.add_url }}" class="rp-add">Add</a>{% endif %}
+                    </li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            </div>
+
+            {# --------- Group 4: Interviews --------- #}
+            <div class="rp-group">
+              <div class="rp-group__heading"><i class="fas fa-comments"></i> Interviews</div>
+              <ul class="rp-linkgrid">
+                {% for model in app.models %}
+                  {% if model.object_name in "InterviewSchedule InterviewScore"|split:" " %}
+                    <li>
+                      {% if model.admin_url %}<a href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}{{ model.name }}{% endif %}
+                      {% if model.add_url %}<a href="{{ model.add_url }}" class="rp-add">Add</a>{% endif %}
+                    </li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            </div>
+
+            {# --------- Group 5: Finalization & Audit --------- #}
+            <div class="rp-group">
+              <div class="rp-group__heading"><i class="fas fa-flag-checkered"></i> Finalization & Notifications</div>
+              <ul class="rp-linkgrid">
+                {% for model in app.models %}
+                  {% if model.object_name in "FinalSelection Notification AuditLog"|split:" " %}
+                    <li>
+                      {% if model.admin_url %}<a href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}{{ model.name }}{% endif %}
+                      {% if model.add_url %}<a href="{{ model.add_url }}" class="rp-add">Add</a>{% endif %}
+                    </li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            </div>
+
+            {# Anything ungrouped falls back here #}
+            <div class="rp-group rp-group--muted">
+              <div class="rp-group__heading"><i class="fas fa-box-open"></i> Other</div>
+              <ul class="rp-linkgrid">
+                {% for model in app.models %}
+                  {% if model.object_name not in "Province District ApplicantProfile AlternativeContact ParentGuardian EducationRecord WorkHistory Reference Document RecruitmentCycle Application ApplicationEligibility ScreeningAction Test Question Choice TestAttempt AttemptAnswer InterviewSchedule InterviewScore FinalSelection Notification AuditLog"|split:" " %}
+                    <li>
+                      {% if model.admin_url %}<a href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}{{ model.name }}{% endif %}
+                      {% if model.add_url %}<a href="{{ model.add_url }}" class="rp-add">Add</a>{% endif %}
+                    </li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            </div>
+          {% else %}
+            {# Non-recruitment apps: default list #}
+            <ul class="rp-linkgrid">
+              {% for model in app.models %}
+                <li>
+                  {% if model.admin_url %}<a href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}{{ model.name }}{% endif %}
+                  {% if model.add_url %}<a href="{{ model.add_url }}" class="rp-add">Add</a>{% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      </section>
+    {% endfor %}
+  {% else %}
+    <p>{% trans "You don’t have permission to view or edit anything." %}</p>
+  {% endif %}
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script>
+    // simple accordion toggle
+    document.addEventListener('click', function(e){
+      const btn = e.target.closest('[data-rp-accordion-button]');
+      if(!btn) return;
+      const body = btn.closest('.rp-accordion').querySelector('[data-rp-accordion-body]');
+      const open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', !open);
+      body.style.display = open ? 'none' : 'block';
+      btn.textContent = open ? '►' : '▼';
+    });
+  </script>
+{% endblock %}

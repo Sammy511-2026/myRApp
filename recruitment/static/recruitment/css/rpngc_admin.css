@@ -1,0 +1,49 @@
+/* Top toolbar */
+.rpngc-toolbar .btn { min-width: 190px; }
+.rpngc-toolbar .dropdown-menu { min-width: 260px; }
+
+/* Maintain original card sections nicely */
+.r-card .navgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: .5rem .75rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.r-card .navgrid a {
+  display: inline-block;
+  padding: .45rem .6rem;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: .5rem;
+  text-decoration: none;
+}
+.r-card .navgrid a:hover {
+  background-color: rgba(52,152,219,.08);
+}
+
+/* Chips */
+.chip {
+  display: inline-block;
+  padding: .4rem .7rem;
+  border-radius: 999px;
+  background: #f4f6f8;
+  border: 1px solid #e5e8eb;
+  text-decoration: none;
+}
+.chip:hover { background: #eaf2f9; }
+
+/* Welcome headline */
+.welcome {
+  margin: 0;
+  font-weight: 600;
+}
+.rpngc-toolbar .btn {
+  min-width: 190px;
+}
+.rpngc-toolbar .dropdown-menu {
+  min-width: 260px;
+}
+.rpngc-toolbar h4 {
+  font-weight: 600;
+}

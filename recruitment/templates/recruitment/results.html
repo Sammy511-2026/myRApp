@@ -1,0 +1,22 @@
+{% extends "recruitment/base.html" %}
+{% block content %}
+<h1>Results</h1>
+<table class="table">
+  <thead>
+    <tr><th>Cycle</th><th>Status</th><th>Test</th><th>Interview</th><th>Total</th></tr>
+  </thead>
+  <tbody>
+    {% for a in applications %}
+      <tr>
+        <td>{{ a.cycle.name }} ({{ a.cycle.intake_year }})</td>
+        <td>{{ a.get_status_display }}</td>
+        <td>{{ a.test_score }}</td>
+        <td>{{ a.interview_score }}</td>
+        <td><strong>{{ a.total_score }}</strong></td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5">No results yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

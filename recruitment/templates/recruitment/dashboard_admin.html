@@ -1,0 +1,25 @@
+{% extends "recruitment/base.html" %}
+{% block title %}Staff Dashboard · RPNGC{% endblock %}
+{% block content %}
+  <h2>Staff Dashboard</h2>
+  <div class="cards" style="display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+    <article class="card"><h3>Submitted</h3><strong>{{ counts.submitted }}</strong></article>
+    <article class="card"><h3>Under Review</h3><strong>{{ counts.under_review }}</strong></article>
+    <article class="card"><h3>Shortlisted</h3><strong>{{ counts.shortlisted }}</strong></article>
+    <article class="card"><h3>Rejected</h3><strong>{{ counts.rejected }}</strong></article>
+    <article class="card"><h3>Selected</h3><strong>{{ counts.selected }}</strong></article>
+  </div>
+
+  <h3 style="margin-top:18px">Recent/Active Cycles</h3>
+  <ul>
+    {% for c in cycles %}
+      <li>{{ c.name }} ({{ c.intake_year }}) — {{ c.get_rec_type_display }} {% if c.is_active %}· Active{% endif %}</li>
+    {% empty %}
+      <li>No cycles</li>
+    {% endfor %}
+  </ul>
+
+  <p style="margin-top:12px">
+    <a class="btn" href="/admin/">Open Django Admin</a>
+  </p>
+{% endblock %}

@@ -1,0 +1,220 @@
+{% extends "recruitment/base.html" %}
+{% load static %}
+
+{% block title %}Dashboard · RPNGC{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'recruitment/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+
+  <div class="dashboard-topbar">
+    <div class="dashboard-intro">
+      <p class="dashboard-eyebrow">Applicant portal</p>
+      <h1 class="dashboard-title">Welcome, {{ profile.full_name }}</h1>
+      <p class="dashboard-subtitle">Manage your profile and track your recruitment application.</p>
+    </div>
+
+    <div class="notif-wrap">
+      <button class="notif-bell" id="notifBell" title="Notifications" aria-label="Notifications"
+              aria-expanded="false" aria-controls="notifPanel" type="button">
+        <span aria-hidden="true">🔔</span>
+        <span class="notif-label">Notifications</span>
+        {% if unread_count and unread_count > 0 %}
+          <span class="badge" id="notifBadge">{{ unread_count }}</span>
+        {% endif %}
+      </button>
+
+      <div class="notif-panel" id="notifPanel" aria-hidden="true">
+        {% if notices %}
+          {% for n in notices %}
+            <div class="notif-item {% if not n.read %}unread{% endif %}" data-id="{{ n.id }}">
+              <h4>{{ n.title }}</h4>
+              {% if n.body %}<p>{{ n.body }}</p>{% endif %}
+              <time>{{ n.created_at|date:"M d, Y H:i" }}</time>
+            </div>
+          {% endfor %}
+          <div class="notif-actions">
+            <button class="btn" id="markAllBtn" type="button">Mark all as read</button>
+            <a class="btn" href="{% url 'recruitment:notifications_list' %}">View all</a>
+          </div>
+        {% else %}
+          <div class="notif-empty">No notifications yet.</div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <section class="card profile-summary" aria-labelledby="profile-heading">
+    <div class="profile-avatar">
+      {% if profile.photo %}
+        <img src="{{ profile.photo.url }}" alt="Profile picture">
+      {% else %}
+        <img src="{% static 'recruitment/images/Logo.png' %}" alt="RPNGC crest">
+      {% endif %}
+    </div>
+    <div class="profile-details">
+      <p class="section-eyebrow">Your account</p>
+      <h2 id="profile-heading">Profile details</h2>
+      <p class="profile-contact">
+        <span>{{ profile.email|default:"Add your email address" }}</span>
+        <span class="contact-divider" aria-hidden="true">·</span>
+        <span>{{ profile.phone|default:"Add your mobile number" }}</span>
+      </p>
+      <a class="btn" href="{% url 'recruitment:profile_edit' %}">Edit profile and picture</a>
+    </div>
+  </section>
+
+  {% if application %}
+    <section class="card application-card" aria-labelledby="application-heading">
+      <div class="section-heading">
+        <div>
+          <p class="section-eyebrow">Recruitment progress</p>
+          <h2 id="application-heading">Application summary</h2>
+        </div>
+      </div>
+      <dl class="application-details">
+        <div class="application-detail">
+          <dt>Recruitment cycle</dt>
+          <dd>{{ application.cycle }}</dd>
+        </div>
+        <div class="application-detail">
+          <dt>Current status</dt>
+          <dd><span class="status-value">{{ application.get_status_display|default:application.status }}</span></dd>
+        </div>
+        <div class="application-detail">
+          <dt>Submitted</dt>
+          <dd>{% if application.submitted_at %}{{ application.submitted_at|date:"F j, Y" }}{% else %}Draft{% endif %}</dd>
+        </div>
+      </dl>
+      <div class="applicant-actions">
+        <a class="btn" href="{% url 'recruitment:application_status' %}">View full status</a>
+        {% if not application.submitted_at %}
+          {% if active_cycle and application.cycle_id == active_cycle.id %}
+          <a class="btn primary" href="{% url 'recruitment:application_form' %}">Edit and continue draft</a>
+          {% endif %}
+          <form method="post" action="{% url 'recruitment:application_delete' application.pk %}"
+                onsubmit="return confirm('Delete this draft application? This cannot be undone.');">
+            {% csrf_token %}
+            <button class="btn danger-button" type="submit">Delete draft</button>
+          </form>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="card activity-card" aria-labelledby="activity-heading">
+      <div class="section-heading">
+        <div>
+          <p class="section-eyebrow">Application updates</p>
+          <h2 id="activity-heading">Recent admin actions</h2>
+        </div>
+      </div>
+      {% if actions %}
+        <ul class="timeline">
+          {% for a in actions %}
+            <li>
+              <div class="time">{{ a.created_at|date:"M d, Y H:i" }}</div>
+              <div class="desc">
+                <strong>{% firstof a.by_user.get_full_name a.by_user.username "Staff" %}</strong>
+                {% if a.action_name %}— {{ a.action_name }}{% endif %}
+                {% if a.reason %}<div class="muted">{{ a.reason }}</div>{% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="empty-state">No admin actions yet. Updates will appear here when available.</p>
+      {% endif %}
+    </section>
+  {% else %}
+    <section class="card no-application-card" aria-labelledby="no-application-heading">
+      <p class="section-eyebrow">Recruitment progress</p>
+      <h2 id="no-application-heading">No application yet</h2>
+      {% if active_cycle %}
+        <p>Applications are open for {{ active_cycle.name }}. Start yours when you are ready.</p>
+        <p><a class="btn primary" href="{% url 'recruitment:application_form' %}">Open application form</a></p>
+      {% else %}
+        <p>There is no active recruitment cycle at the moment. Your profile can still be updated while you wait.</p>
+      {% endif %}
+      {% if active_cycle and application and application.cycle_id != active_cycle.id %}
+        <div class="card">
+          <h3>Current recruitment cycle</h3>
+          <p>You can start a separate application for {{ active_cycle.name }} ({{ active_cycle.intake_year }}).</p>
+          <a class="btn primary" href="{% url 'recruitment:application_form' %}">Start new application</a>
+        </div>
+      {% endif %}
+    </section>
+  {% endif %}
+
+</div>
+
+<script>
+  (function(){
+    const bell = document.getElementById('notifBell');
+    const panel = document.getElementById('notifPanel');
+    const badge = document.getElementById('notifBadge');
+    const markAllBtn = document.getElementById('markAllBtn');
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    function togglePanel(){
+      const open = panel.style.display === 'block';
+      panel.style.display = open ? 'none' : 'block';
+      panel.setAttribute('aria-hidden', open ? 'true' : 'false');
+      bell.setAttribute('aria-expanded', open ? 'false' : 'true');
+      // Mark-all when opening (comment out if you prefer manual)
+      if (!open && markAllBtn) markAll();
+    }
+
+    async function markAll(){
+      try{
+        await fetch("{% url 'recruitment:mark_all_seen' %}", {
+          method: "POST",
+          headers: {"X-CSRFToken": csrftoken}
+        });
+        if (badge) badge.remove();
+        panel.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
+      }catch(e){}
+    }
+
+    panel?.addEventListener('click', async (e)=>{
+      const item = e.target.closest('.notif-item');
+      if(!item) return;
+      const id = item.dataset.id;
+      if (!id) return;
+      try{
+        await fetch("{% url 'recruitment:notification_seen' 0 %}".replace('/0/', `/${id}/`), {
+          method: "POST",
+          headers: {"X-CSRFToken": csrftoken}
+        });
+        item.classList.remove('unread');
+        if (badge) {
+          const v = parseInt(badge.textContent.trim() || "0", 10);
+          if (v > 1) badge.textContent = String(v - 1);
+          else badge.remove();
+        }
+      }catch(e){}
+    });
+
+    bell?.addEventListener('click', togglePanel);
+
+    markAllBtn?.addEventListener('click', markAll);
+
+    document.addEventListener('click', (e)=>{
+      if(!panel) return;
+      if(panel.contains(e.target) || bell.contains(e.target)) return;
+      panel.style.display = 'none';
+      panel.setAttribute('aria-hidden', 'true');
+      bell.setAttribute('aria-expanded', 'false');
+    });
+  })();
+</script>
+{% endblock %}

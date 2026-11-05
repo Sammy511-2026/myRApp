@@ -1,0 +1,50 @@
+{% extends "registration/base.html" %}
+{% load i18n %}
+
+{% block content %}
+  <div class="rpngc-login-heading">
+    <span class="rpngc-login-heading__crest" aria-hidden="true"><i class="fas fa-shield-alt"></i></span>
+    <p class="rpngc-login-heading__eyebrow">{% trans "Secure staff access" %}</p>
+    <h1>{% trans "Recruitment portal" %}</h1>
+    <p>{% trans "Sign in with your authorized staff account to continue." %}</p>
+  </div>
+
+  {% if user.is_authenticated %}
+    <div class="rpngc-login-alert" role="alert">
+      {% blocktrans with username=user.username trimmed %}
+        You are signed in as {{ username }}, but are not authorized to access this page. Sign in with an authorized account.
+      {% endblocktrans %}
+    </div>
+  {% endif %}
+
+  {% if form.errors %}
+    <div class="rpngc-login-alert" role="alert">
+      {% trans "The username or password was not recognized. Please check your details and try again." %}
+    </div>
+  {% endif %}
+
+  <form action="{{ app_path }}" method="post" id="login-form" class="rpngc-login-form">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="rpngc-login-field-error">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="rpngc-login-field">
+      <label for="{{ form.username.id_for_label }}">{% trans "Username" %}</label>
+      {{ form.username }}
+      {% if form.username.errors %}<span class="rpngc-login-field-error">{{ form.username.errors|join:", " }}</span>{% endif %}
+    </div>
+    <div class="rpngc-login-field">
+      <label for="{{ form.password.id_for_label }}">{% trans "Password" %}</label>
+      {{ form.password }}
+      {% if form.password.errors %}<span class="rpngc-login-field-error">{{ form.password.errors|join:", " }}</span>{% endif %}
+    </div>
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit" class="btn btn-primary rpngc-login-submit">
+      <i class="fas fa-lock" aria-hidden="true"></i>
+      {% trans "Sign in securely" %}
+    </button>
+  </form>
+
+  <p class="rpngc-login-notice">
+    <i class="fas fa-shield-alt" aria-hidden="true"></i>
+    {% trans "Authorized Royal Papua New Guinea Constabulary personnel only." %}
+  </p>
+{% endblock %}

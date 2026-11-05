@@ -1,0 +1,19 @@
+<div class="model-grid">
+  {% for want in names %}
+    {% for m in all_models %}
+      {% if m.object_name == want %}
+        <div class="model-card">
+          <span class="title">{{ m.name }}</span>
+          <div>
+            {% if m.admin_url %}
+              <a class="btn btn-outline-primary btn-sm" href="{{ m.admin_url }}">{% trans "Manage" %}</a>
+            {% endif %}
+            {% if m.add_url %}
+              <a class="btn btn-primary btn-sm" href="{{ m.add_url }}">{% trans "Add" %}</a>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+</div>

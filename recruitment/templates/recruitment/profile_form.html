@@ -1,0 +1,61 @@
+{% extends "recruitment/base.html" %}
+{% load static %}
+
+{% block title %}Manage Profile · RPNGC{% endblock %}
+
+{% block extra_head %}
+<style>
+  .profile-edit{max-width:850px;margin:14px auto}
+  .profile-edit__heading{margin-bottom:20px}
+  .profile-edit__heading h1{margin:0;color:#0b2344;font-size:1.8rem}
+  .profile-edit__heading p{margin:6px 0 0;color:#66758a}
+  .profile-edit__card{padding:24px;border:1px solid #e1e7ef;border-radius:14px;background:#fff;box-shadow:0 8px 26px rgba(11,35,68,.06)}
+  .profile-edit__photo{display:flex;align-items:center;gap:18px;margin-bottom:20px}
+  .profile-edit__photo img{width:88px;height:88px;border:1px solid #e1e7ef;border-radius:50%;object-fit:cover}
+  .profile-edit__photo p{margin:0;color:#66758a;font-size:.85rem}
+  .profile-edit__form p{margin:0 0 15px}
+  .profile-edit__form label{display:block;margin-bottom:5px;color:#18263b;font-weight:700}
+  .profile-edit__form input,.profile-edit__form select,.profile-edit__form textarea{box-sizing:border-box;width:100%;padding:10px 12px;border:1px solid #ccd5e1;border-radius:8px;background:#fff}
+  .profile-edit__form input[type=checkbox]{width:auto}
+  .profile-edit__form .helptext{display:block;margin-top:4px;color:#66758a;font-size:.8rem}
+  .profile-edit__form .errorlist{margin:4px 0;padding-left:20px;color:#b42318}
+  .profile-edit__actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+  .profile-edit__actions button,.profile-edit__actions a{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 16px;border:1px solid #0b2344;border-radius:8px;background:#0b2344;color:#fff;font-weight:700;text-decoration:none}
+  .profile-edit__actions a{border-color:#ccd5e1;background:#fff;color:#18263b}
+  @media(max-width:600px){.profile-edit__card{padding:17px}.profile-edit__photo{align-items:flex-start}}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="profile-edit">
+  <header class="profile-edit__heading">
+    <h1>Manage your profile</h1>
+    <p>Keep your personal details and profile picture up to date.</p>
+  </header>
+
+  <div class="profile-edit__card">
+    <div class="profile-edit__photo">
+      {% if current_photo %}
+        <img src="{{ current_photo.url }}" alt="Your current profile picture">
+      {% else %}
+        <img src="{% static 'recruitment/images/Logo.png' %}" alt="RPNGC crest placeholder">
+      {% endif %}
+      <p>Choose a clear, recent photo. You can also remove the current photo using the checkbox below.</p>
+    </div>
+
+    <form class="profile-edit__form" method="post" enctype="multipart/form-data"
+          data-districts-url="{% url 'recruitment:district_choices' %}">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="profile-edit__actions">
+        <button type="submit">Save profile</button>
+        <a href="{{ cancel_url }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'recruitment/js/location_selects.js' %}" defer></script>
+{% endblock %}

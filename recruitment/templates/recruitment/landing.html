@@ -1,0 +1,152 @@
+{% extends "recruitment/base.html" %}
+{% load static %}
+
+{% block title %}RPNGC Recruitment · Serve Papua New Guinea{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'recruitment/css/landing.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="landing">
+  <section class="landing-hero" aria-labelledby="landing-title">
+    <div class="landing-hero__image" aria-hidden="true"></div>
+    <div class="landing-hero__content">
+      <div class="landing-identity">
+        <img src="{% static 'recruitment/images/Logo.png' %}" alt="" class="landing-identity__crest">
+        <span>Royal Papua New Guinea Constabulary</span>
+      </div>
+      <p class="landing-eyebrow">Recruitment and careers</p>
+      <h1 id="landing-title">A career in service.<br><span>A future with purpose.</span></h1>
+      <p class="landing-lead">
+        Build a stronger, safer Papua New Guinea through courage, professionalism and service to community.
+      </p>
+      <p class="landing-slogan">Service with pride. Integrity in every action.</p>
+
+      <div class="landing-actions">
+        {% if request.user.is_authenticated %}
+          {% if request.user.role == "APPLICANT" %}
+            {% if active_cycle %}
+              <a class="landing-button landing-button--gold" href="{% url 'recruitment:application_form' %}">
+                Continue your application <span aria-hidden="true">→</span>
+              </a>
+            {% else %}
+              <a class="landing-button landing-button--gold" href="{% url 'recruitment:application_status' %}">
+                View application status <span aria-hidden="true">→</span>
+              </a>
+            {% endif %}
+            <a class="landing-button landing-button--glass" href="{% url 'recruitment:application_status' %}">
+              Check application status
+            </a>
+          {% else %}
+            <a class="landing-button landing-button--gold" href="{% url 'recruitment:staff_dashboard' %}">
+              Open staff administration <span aria-hidden="true">→</span>
+            </a>
+          {% endif %}
+        {% else %}
+          <a class="landing-button landing-button--gold" href="{% url 'recruitment:register' %}">
+            Start your application <span aria-hidden="true">→</span>
+          </a>
+          <a class="landing-button landing-button--glass" href="{% url 'recruitment:login' %}">
+            Applicant sign in
+          </a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="landing-hero__seal" aria-hidden="true">
+      <span>RPNGC</span>
+      <span>Service · Integrity · Respect</span>
+    </div>
+  </section>
+
+  {% if not request.user.is_authenticated %}
+  <section class="landing-account-access" aria-labelledby="account-access-title">
+    <div class="landing-account-access__intro">
+      <p class="landing-eyebrow">Authorized personnel</p>
+      <h2 id="account-access-title">Staff and administrator access</h2>
+      <p>Sign in with your assigned account. Access is determined by your account role and permissions.</p>
+    </div>
+    <div class="landing-account-access__choices">
+      <a class="landing-account-card" href="{% url 'recruitment:login' %}">
+        <span class="landing-account-card__icon" aria-hidden="true">S</span>
+        <span>
+          <strong>Staff sign in</strong>
+          <small>For recruitment officers and staff</small>
+        </span>
+        <span class="landing-account-card__arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="landing-account-card" href="{% url 'recruitment:login' %}">
+        <span class="landing-account-card__icon landing-account-card__icon--gold" aria-hidden="true">A</span>
+        <span>
+          <strong>Administrator sign in</strong>
+          <small>For authorized system administrators</small>
+        </span>
+        <span class="landing-account-card__arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="landing-cycle" aria-labelledby="cycle-title">
+    <div class="landing-cycle__mark" aria-hidden="true"><span></span></div>
+    <div class="landing-cycle__copy">
+      <p class="landing-eyebrow">Recruitment update</p>
+      <h2 id="cycle-title">
+        {% if active_cycle %}{{ active_cycle.name }} · {{ active_cycle.intake_year }}{% else %}Your next step starts here{% endif %}
+      </h2>
+      <p>
+        {% if active_cycle %}
+          Applications are open for this recruitment cycle. Review the requirements and submit your application online.
+        {% else %}
+          There is no active recruitment cycle at the moment. Check back for future opportunities.
+        {% endif %}
+      </p>
+    </div>
+    <div class="landing-cycle__status {% if active_cycle %}is-open{% else %}is-closed{% endif %}">
+      <span class="landing-cycle__status-dot" aria-hidden="true"></span>
+      {% if active_cycle %}Applications open{% else %}No active intake{% endif %}
+    </div>
+  </section>
+
+  <section class="landing-values" aria-labelledby="values-title">
+    <div class="landing-section-heading">
+      <p class="landing-eyebrow">A calling to serve</p>
+      <h2 id="values-title">Make a difference in every community</h2>
+      <p>Join a national service built on responsibility, respect and commitment to the people of Papua New Guinea.</p>
+    </div>
+
+    <div class="landing-value-grid">
+      <article class="landing-value-card">
+        <span class="landing-value-card__number">01</span>
+        <h3>Serve with integrity</h3>
+        <p>Act with honesty, fairness and accountability in every duty entrusted to you.</p>
+      </article>
+      <article class="landing-value-card">
+        <span class="landing-value-card__number">02</span>
+        <h3>Protect with courage</h3>
+        <p>Help keep people and communities safe through discipline and professional service.</p>
+      </article>
+      <article class="landing-value-card">
+        <span class="landing-value-card__number">03</span>
+        <h3>Grow through service</h3>
+        <p>Develop your skills, character and leadership while serving across our nation.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="landing-steps" aria-labelledby="steps-title">
+    <div>
+      <p class="landing-eyebrow">Your application journey</p>
+      <h2 id="steps-title">Three steps to get started</h2>
+    </div>
+    <ol class="landing-step-list">
+      <li><span>1</span><div><strong>Create your account</strong><p>Register with your personal details and a secure password.</p></div></li>
+      <li><span>2</span><div><strong>Complete your application</strong><p>Provide your information and upload the required supporting documents.</p></div></li>
+      <li><span>3</span><div><strong>Follow your progress</strong><p>Sign in any time to review your application status and updates.</p></div></li>
+    </ol>
+    {% if not request.user.is_authenticated %}
+      <a class="landing-text-link" href="{% url 'recruitment:register' %}">View registration <span aria-hidden="true">→</span></a>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

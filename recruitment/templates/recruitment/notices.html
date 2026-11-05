@@ -1,0 +1,16 @@
+{% extends "recruitment/base.html" %}
+{% block content %}
+<h1>Notices & Updates</h1>
+<ul class="timeline">
+  {% for n in items %}
+    <li>
+      <span class="tag">{{ n.get_ntype_display }}</span>
+      <strong>{{ n.title }}</strong>
+      <small>{{ n.created_at|date:"M d, Y H:i" }}</small>
+      {% if n.body %}<p>{{ n.body }}</p>{% endif %}
+    </li>
+  {% empty %}
+    <li>No notices yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

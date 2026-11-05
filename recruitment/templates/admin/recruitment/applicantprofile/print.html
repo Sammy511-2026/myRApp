@@ -1,0 +1,221 @@
+{% load static %}{% load i18n %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root { --ink:#0b1220; --muted:#475569; --line:#e2e8f0; --brand:#0f3b6d; }
+    html,body{font:13px/1.45 system-ui,Segoe UI,Roboto,Inter,Arial;color:var(--ink);background:#fff}
+    .wrap{max-width:980px;margin:20px auto;padding:0 16px}
+    h1,h2,h3{margin:.5rem 0}
+    .muted{color:var(--muted)}
+    .grid{display:grid;gap:8px}
+    .g2{grid-template-columns:1fr 1fr}
+    .card{border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0}
+    table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+    th{background:#f1f5f9}
+    .head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+    .logo{width:64px;height:64px;border-radius:10px;background:#e5effa;display:grid;place-items:center}
+    .tag{display:inline-block;padding:2px 8px;border-radius:999px;background:#eef2ff;margin-left:6px}
+    .actions{display:flex;gap:8px;margin:10px 0}
+    .hr{height:1px;background:var(--line);margin:8px 0}
+    .brand{color:var(--brand)}
+    @media print {
+      .no-print { display:none !important; }
+      .card { page-break-inside: avoid; }
+      a { color: black; text-decoration: none; }
+      @page { margin: 16mm; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="head">
+      <div class="logo">
+        <img src="{% static 'recruitment/images/logo.png' %}" alt="RPNGC" style="width:42px;height:42px;object-fit:contain">
+      </div>
+      <div>
+        <h1 style="margin:0">RPNGC Applicant Dossier</h1>
+        <div class="muted">
+          Generated: {% now "Y-m-d H:i" %} • Source: Admin Panel
+        </div>
+      </div>
+      <div style="margin-left:auto" class="no-print">
+        <button onclick="window.print()" style="padding:6px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#0f3b6d;color:#fff">Print</button>
+      </div>
+    </header>
+
+    <section class="card">
+      <h2 class="brand" style="margin-top:0">{{ profile.full_name }}</h2>
+      <div class="grid g2">
+        <div>
+          <div><strong>Username:</strong> {{ profile.user.username }}</div>
+          <div><strong>Gender:</strong> {{ profile.get_gender_display }}</div>
+          <div><strong>DOB:</strong> {{ profile.dob }} <span class="muted">(Age: {{ profile.age }})</span></div>
+          <div><strong>Phone:</strong> {{ profile.phone|default:"—" }}</div>
+          <div><strong>Email:</strong> {{ profile.email|default:"—" }}</div>
+        </div>
+        <div>
+          <div><strong>Residence:</strong> {{ profile.province|default:"—" }} / {{ profile.district|default:"—" }}</div>
+          <div><strong>Province of Origin:</strong> {{ profile.province_of_origin|default:"—" }}</div>
+          <div><strong>NID/Passport:</strong> {{ profile.nid_number|default:"—" }}</div>
+          {% if profile.photo %}
+            <div style="margin-top:6px">
+              <img src="{{ profile.photo.url }}" alt="Photo" style="width:92px;height:92px;object-fit:cover;border-radius:10px;border:1px solid var(--line)">
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Application</h2>
+      {% if application %}
+        <div><strong>Cycle:</strong> {{ application.cycle }}</div>
+        <div><strong>Status:</strong> {{ application.get_status_display }}</div>
+        <div><strong>Submitted:</strong> {{ application.submitted_at|date:"Y-m-d H:i" }}</div>
+        <div><strong>Total Score:</strong> {{ application.total_score }}</div>
+        <div class="hr"></div>
+        <div class="grid g2">
+          <div><strong>From Bougainville:</strong> {{ application.from_bougainville|yesno:"Yes,No" }}</div>
+          <div><strong>Applied Unit:</strong> {{ application.applied_unit|default:"—" }}</div>
+          <div><strong>Experience:</strong> {{ application.get_years_experience_display|default:"—" }} {% if application.years_experience_other %} ({{ application.years_experience_other }}){% endif %}</div>
+          <div><strong>Reservist 2021–2022:</strong> {{ application.reservist_2021_2022|yesno:"Yes,No" }}</div>
+          <div><strong>Criminal conviction:</strong> {% if application.criminal_conviction == True %}Yes{% elif application.criminal_conviction == False %}No{% else %}Unknown{% endif %}</div>
+          <div><strong>Declaration agreed:</strong> {{ application.declaration_agreed|yesno:"Yes,No" }}</div>
+          <div><strong>Signature:</strong> {{ application.signature_name|default:"—" }}</div>
+          <div><strong>Signature date:</strong> {{ application.signature_date|default:"—" }}</div>
+        </div>
+        {% if eligibility %}
+          <div class="hr"></div>
+          <div><strong>Eligibility:</strong> {{ eligibility.get_result_display }}</div>
+          <div class="muted">Age: {{ eligibility.age_ok|yesno:"OK,Fail" }} • Edu: {{ eligibility.education_ok|yesno:"OK,Fail" }} • Med: {{ eligibility.medical_ok|yesno:"OK,Fail" }} • Police: {{ eligibility.police_ok|yesno:"OK,Fail" }}</div>
+        {% endif %}
+      {% else %}
+        <em>No application found.</em>
+      {% endif %}
+    </section>
+
+    <section class="card">
+      <h2>Required Documents</h2>
+      <table>
+        <thead><tr><th>Type</th><th>File</th><th>Status</th><th>Uploaded</th></tr></thead>
+        <tbody>
+          {% for d in documents %}
+            <tr>
+              <td>{{ d.get_doc_type_display }}</td>
+              <td>{{ d.file.name|default:"(missing)" }}</td>
+              <td>{{ d.get_verify_status_display }}</td>
+              <td>{{ d.uploaded_at|date:"Y-m-d H:i" }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4"><em>No documents uploaded.</em></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>Education</h2>
+      <table>
+        <thead><tr><th>Level</th><th>Institution</th><th>Province</th><th>Start</th><th>End</th><th>GPA</th></tr></thead>
+        <tbody>
+          {% for e in education %}
+            <tr>
+              <td>{{ e.get_level_display }}</td>
+              <td>{{ e.institution }}</td>
+              <td>{{ e.province|default:"—" }}</td>
+              <td>{{ e.start_date|date:"M j, Y"|default:"—" }}</td>
+              <td>{{ e.end_date|date:"M j, Y"|default:"—" }}</td>
+              <td>{{ e.gpa|default:"—" }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="7"><em>No education records.</em></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>Work History</h2>
+      <table>
+        <thead><tr><th>Employer</th><th>Position</th><th>Start</th><th>End</th><th>Duties</th></tr></thead>
+        <tbody>
+          {% for w in workhistory %}
+            <tr>
+              <td>{{ w.employer }}</td>
+              <td>{{ w.position|default:"—" }}</td>
+              <td>{{ w.start_date|default:"—" }}</td>
+              <td>{{ w.end_date|default:"—" }}</td>
+              <td>{{ w.duties|default:"—" }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5"><em>No work history.</em></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>References</h2>
+      <table>
+        <thead><tr><th>Name</th><th>Position</th><th>Phone</th><th>Email</th></tr></thead>
+        <tbody>
+          {% for r in references %}
+            <tr>
+              <td>{{ r.name }}</td>
+              <td>{{ r.position_title|default:"—" }}</td>
+              <td>{{ r.phone_number|default:"—" }}</td>
+              <td>{{ r.email|default:"—" }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4"><em>No references.</em></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>Alternative Contact & Parents/Guardians</h2>
+      <div class="grid g2">
+        <div>
+          <h3>Alternative Contact</h3>
+          {% if alt_contacts %}
+            {% for contact in alt_contacts %}
+              <div><strong>Name:</strong> {{ contact.name }}</div>
+              <div><strong>Relationship:</strong> {{ contact.relationship|default:"—" }}</div>
+              <div><strong>Phone:</strong> {{ contact.phone|default:"—" }}</div>
+              <div><strong>Address:</strong> {{ contact.address|default:"—" }}</div>
+            {% endfor %}
+          {% else %}
+            <em>Not provided.</em>
+          {% endif %}
+        </div>
+        <div>
+          <h3>Parents / Guardians</h3>
+          {% if parents %}
+            <table>
+              <thead><tr><th>Kind</th><th>Name</th><th>Phone</th><th>Alive</th></tr></thead>
+              <tbody>
+                {% for p in parents %}
+                  <tr>
+                    <td>{{ p.get_kind_display }}</td>
+                    <td>{{ p.name }}</td>
+                    <td>{{ p.phone|default:"—" }}</td>
+                    <td>{{ p.is_alive|yesno:"Yes,No" }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <em>Not provided.</em>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

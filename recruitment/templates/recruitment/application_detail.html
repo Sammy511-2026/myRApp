@@ -1,0 +1,198 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Submitted Application — RPNGC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{% static 'recruitment/css/application_form.css' %}">
+  <style>
+    :root{--ink:#0b1220;--muted:#6b7280;--line:#d1d5db;--panel:#0f3b6d;--bg:#f8fafc;--card:#ffffff}
+    html,body{background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,Segoe UI,Roboto,Inter,Arial}
+    .wrap{max-width:1080px;margin:24px auto;padding:0 16px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 16px 12px;margin-bottom:12px}
+    .grid{display:grid;gap:12px}
+    .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .btn{display:inline-block;border:1px solid #cbd5e1;border-radius:10px;padding:8px 14px;text-decoration:none}
+    .table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+    .table th,.table td{border-bottom:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
+    .table th{background:var(--panel);color:#fff;font-weight:600}
+    .muted{color:var(--muted)}
+    .title{font-size:20px;margin:0}
+    .subtitle{font-size:13px;color:#1f2937}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <header class="topbar">
+    <div>
+      <h1 class="title">Submitted Application</h1>
+      {% if active_cycle %}<div class="subtitle">{{ active_cycle.name }} • {{ active_cycle.intake_year }}</div>{% endif %}
+    </div>
+    <div>
+      <a class="btn" href="{% url 'recruitment:applicant_dashboard' %}">Back to Dashboard</a>
+    </div>
+  </header>
+
+  <!-- Status / meta -->
+  <section class="card">
+    <div class="grid g3">
+      <div><strong>Status:</strong> {{ application.get_status_display }}</div>
+      <div><strong>Submitted:</strong> {{ application.submitted_at|date:"Y-m-d H:i" }}</div>
+      <div><strong>Eligibility:</strong> {% if application.eligibility_passed %}Pass{% else %}Pending/Fail{% endif %}</div>
+    </div>
+  </section>
+
+  <!-- Applicant -->
+  <section class="card">
+    <h2>Applicant Information</h2>
+    <div class="grid g2">
+      <div><strong>Name:</strong> {{ profile.full_name }}</div>
+      <div><strong>Sex:</strong> {{ profile.get_gender_display }}</div>
+      <div><strong>DOB:</strong> {{ profile.dob|date:"Y-m-d" }}</div>
+      <div><strong>Age:</strong> {{ profile.age }}</div>
+      <div><strong>Origin Province:</strong> {{ profile.province_of_origin }}</div>
+      <div><strong>Residence:</strong> {{ profile.province }}{% if profile.district %} / {{ profile.district }}{% endif %}</div>
+      <div><strong>Phone:</strong> {{ profile.phone }}</div>
+      <div><strong>Email:</strong> {{ profile.email }}</div>
+      <div><strong>NID/Passport:</strong> {{ profile.nid_number|default:"—" }}</div>
+      <div><strong>Highest Education:</strong> {{ profile.get_highest_education_level_display }}</div>
+    </div>
+  </section>
+
+  <!-- Application specifics -->
+  <section class="card">
+    <h2>Application Details</h2>
+    <div class="grid g3">
+      <div><strong>From Bougainville:</strong> {{ application.from_bougainville|yesno:"Yes,No" }}</div>
+      <div><strong>Applied Unit:</strong> {{ application.applied_unit|default:"—" }}</div>
+      <div><strong>Work Experience:</strong>
+        {% if application.years_experience == "OTHER" %}
+          Other — {{ application.years_experience_other|default:"(not specified)" }}
+        {% else %}
+          {{ application.get_years_experience_display|default:"—" }}
+        {% endif %}
+      </div>
+      <div><strong>Reservist 2021–2022:</strong> {{ application.reservist_2021_2022|yesno:"Yes,No" }}</div>
+      <div class="g3" style="grid-column:1/-1"><strong>Reason for Applying:</strong><br>{{ application.reason_for_applying|linebreaksbr }}</div>
+      <div><strong>Criminal Conviction:</strong>
+        {% if application.criminal_conviction == True %}Yes{% elif application.criminal_conviction == False %}No{% else %}—{% endif %}
+      </div>
+      <div><strong>Declaration Agreed:</strong> {{ application.declaration_agreed|yesno:"Yes,No" }}</div>
+      <div><strong>Signature:</strong> {{ application.signature_name|default:"—" }}</div>
+      <div><strong>Signature Date:</strong> {{ application.signature_date|date:"Y-m-d" }}</div>
+    </div>
+  </section>
+
+  <!-- Alternative contact -->
+  <section class="card">
+    <h2>Alternative Contact</h2>
+    {% if alt_contacts %}
+      <div class="grid g2">
+        {% for contact in alt_contacts %}
+          <div><strong>Name:</strong> {{ contact.name }}</div>
+          <div><strong>Relationship:</strong> {{ contact.relationship|default:"—" }}</div>
+          <div><strong>Phone:</strong> {{ contact.phone|default:"—" }}</div>
+          <div><strong>Address:</strong> {{ contact.address|default:"—" }}</div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="muted">No alternative contact provided.</div>
+    {% endif %}
+  </section>
+
+  <!-- Education -->
+  <section class="card">
+    <h2>Education</h2>
+    {% if education %}
+      <table class="table">
+        <thead><tr><th>Level</th><th>Institution</th><th>Province</th><th>Start</th><th>End</th><th>GPA</th></tr></thead>
+        <tbody>
+          {% for e in education %}
+          <tr>
+            <td>{{ e.get_level_display }}</td>
+            <td>{{ e.institution }}</td>
+            <td>{{ e.province }}</td>
+            <td>{{ e.start_date|date:"M j, Y" }}</td>
+            <td>{{ e.end_date|date:"M j, Y" }}</td>
+            <td>{{ e.gpa }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="muted">No education records.</div>
+    {% endif %}
+  </section>
+
+  <!-- Work -->
+  <section class="card">
+    <h2>Work History</h2>
+    {% if work %}
+      <table class="table">
+        <thead><tr><th>Employer</th><th>Position</th><th>Start</th><th>End</th><th>Duties</th></tr></thead>
+        <tbody>
+        {% for w in work %}
+          <tr>
+            <td>{{ w.employer }}</td>
+            <td>{{ w.position }}</td>
+            <td>{{ w.start_date }}</td>
+            <td>{{ w.end_date }}</td>
+            <td>{{ w.duties|linebreaksbr }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="muted">No work history.</div>
+    {% endif %}
+  </section>
+
+  <!-- References -->
+  <section class="card">
+    <h2>References</h2>
+    {% if refs %}
+      <table class="table">
+        <thead><tr><th>Name</th><th>Position</th><th>Phone</th><th>Email</th></tr></thead>
+        <tbody>
+        {% for r in refs %}
+          <tr>
+            <td>{{ r.name }}</td>
+            <td>{{ r.position_title }}</td>
+            <td>{{ r.phone_number }}</td>
+            <td>{{ r.email }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="muted">No references provided.</div>
+    {% endif %}
+  </section>
+
+  <!-- Documents -->
+  <section class="card">
+    <h2>Uploaded Documents</h2>
+    {% if docs %}
+      <table class="table">
+        <thead><tr><th>Type</th><th>Status</th><th>Reviewed By</th><th>Uploaded</th></tr></thead>
+        <tbody>
+        {% for d in docs %}
+          <tr>
+            <td>{{ d.get_doc_type_display }}</td>
+            <td>{{ d.get_verify_status_display }}</td>
+            <td>{% if d.verified_by %}{{ d.verified_by.get_full_name|default:d.verified_by.username }}{% else %}—{% endif %}</td>
+            <td>{{ d.uploaded_at|date:"Y-m-d H:i" }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="muted">No documents uploaded.</div>
+    {% endif %}
+  </section>
+</main>
+</body>
+</html>

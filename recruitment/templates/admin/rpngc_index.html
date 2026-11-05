@@ -1,0 +1,132 @@
+{% extends "admin/base_site.html" %}
+{% load static i18n admin_dashboard %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <style>
+    #jazzy-sidebar > .sidebar-brand {
+      display: none !important;
+    }
+
+    .rpngc-dashboard {
+      box-sizing: border-box;
+      width: min(100%, 1180px);
+      margin-inline: auto;
+      padding: 18px 20px 28px;
+    }
+
+    .rpngc-dashboard__metrics {
+      width: min(100%, 820px);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin: 20px auto 32px;
+    }
+
+    .rpngc-dashboard__section {
+      width: min(100%, 1000px);
+      margin: 0 auto;
+    }
+
+    .rpngc-app-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    @media (max-width: 640px) {
+      .rpngc-dashboard {
+        padding: 12px 10px 22px;
+      }
+
+      .rpngc-dashboard__metrics,
+      .rpngc-app-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard rpngc-admin-dashboard{% endblock %}
+
+{% block content %}
+  <script>
+    document.querySelectorAll(
+      "#jazzy-sidebar > .sidebar-brand, #jazzy-sidebar #jazzy-logo, .app-sidebar > .sidebar-brand, .app-sidebar #jazzy-logo"
+    ).forEach(function (brand) {
+      brand.remove();
+    });
+  </script>
+  {% dashboard_metrics as metrics %}
+  <div class="rpngc-dashboard">
+    <section class="rpngc-dashboard__hero">
+      <div class="rpngc-dashboard__identity">
+        <img src="{% static 'recruitment/images/logo.png' %}" alt="Royal Papua New Guinea Constabulary">
+        <div>
+          <p class="rpngc-dashboard__eyebrow">{% trans "Recruitment administration" %}</p>
+          <h1>{% trans "Operations dashboard" %}</h1>
+          <p class="rpngc-dashboard__intro">{% trans "Review and process submitted applications. Manage recruitment cycles, tests, users and reference settings in Admin settings." %}</p>
+        </div>
+      </div>
+      <div class="rpngc-dashboard__cycle {% if metrics.active_cycle %}is-active{% else %}is-inactive{% endif %}">
+        <span class="rpngc-dashboard__cycle-dot" aria-hidden="true"></span>
+        <span>
+          <strong>{% if metrics.active_cycle %}{% trans "Active intake" %}{% else %}{% trans "No active intake" %}{% endif %}</strong>
+          <small>{% if metrics.active_cycle %}{{ metrics.active_cycle.name }} · {{ metrics.active_cycle.intake_year }}{% else %}{% trans "Create or activate a recruitment cycle to open applications." %}{% endif %}</small>
+        </span>
+        {% if perms.recruitment.view_recruitmentcycle %}
+          <a href="{% url 'admin:recruitment_recruitmentcycle_changelist' %}">{% trans "View cycles" %}</a>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="rpngc-dashboard__metrics" aria-label="{% trans 'Recruitment overview' %}">
+      {% if perms.recruitment.view_application %}
+        <a class="rpngc-metric" href="{% url 'admin:recruitment_application_changelist' %}">
+          <span class="rpngc-metric__label">{% trans "Applications received" %}</span>
+          <strong>{{ metrics.submitted_applications }}</strong>
+          <span class="rpngc-metric__note">{% trans "Submitted applications" %}</span>
+        </a>
+        <a class="rpngc-metric rpngc-metric--accent" href="{% url 'admin:recruitment_application_changelist' %}?status__exact=PENDING">
+          <span class="rpngc-metric__label">{% trans "In review" %}</span>
+          <strong>{{ metrics.applications_in_review }}</strong>
+          <span class="rpngc-metric__note">{% trans "Pending or screening" %}</span>
+        </a>
+      {% endif %}
+    </section>
+
+    <section class="rpngc-dashboard__section">
+      <div class="rpngc-dashboard__section-heading">
+        <div>
+          <p class="rpngc-dashboard__eyebrow">{% trans "Workspace" %}</p>
+          <h2>{% trans "Administration areas" %}</h2>
+        </div>
+        <span>{% trans "Choose an area to manage" %}</span>
+      </div>
+      {% if app_list %}
+        <div class="rpngc-app-grid">
+          {% for app in app_list %}
+            <article class="rpngc-app-card">
+              <h3>{{ app.name }}</h3>
+              <ul>
+                {% for model in app.models %}
+                  <li>
+                    {% if model.admin_url %}
+                      <a href="{{ model.admin_url }}">{{ model.name }}</a>
+                    {% else %}
+                      <span>{{ model.name }}</span>
+                    {% endif %}
+                    {% if model.add_url %}
+                      <a class="rpngc-app-card__add" href="{{ model.add_url }}">{% trans "Add" %}</a>
+                    {% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="rpngc-dashboard__empty">{% trans "Your account does not currently have access to any administration areas." %}</p>
+      {% endif %}
+    </section>
+
+    <p class="rpngc-dashboard__footer">{% trans "Royal Papua New Guinea Constabulary · Recruitment Management" %}</p>
+  </div>
+{% endblock %}

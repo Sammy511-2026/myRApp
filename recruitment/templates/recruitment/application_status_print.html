@@ -1,0 +1,60 @@
+{% extends "recruitment/base.html" %}
+
+{% block title %}Application Status · Print{% endblock %}
+
+{% block extra_head %}
+<style>
+  .status-print{max-width:850px;margin:24px auto;padding:30px;background:#fff;color:#18263b}
+  .status-print h1,.status-print h2{color:#0b2344}
+  .status-print h1{margin:0 0 6px;font-size:1.8rem}
+  .status-print h2{margin:28px 0 14px;font-size:1.1rem}
+  .status-print .muted{color:#64748b;font-size:.85rem}
+  .status-print__summary{padding:20px;border-radius:10px;background:#0b2344;color:#fff}
+  .status-print__summary strong{display:block;margin-top:5px;font-size:1.45rem}
+  .status-print__summary p{margin:8px 0 0;color:#dbe5f0}
+  .status-print__updates{margin:0;padding:0;list-style:none}
+  .status-print__updates li{display:grid;grid-template-columns:180px 1fr;gap:14px;padding:14px 0;border-bottom:1px solid #e1e7ef}
+  .status-print__updates time{color:#64748b;font-size:.82rem}
+  .status-print__updates strong{color:#0b2344}
+  .status-print__updates p{margin:5px 0 0;line-height:1.55}
+  .actions{margin-top:20px}
+  @media print{.no-print{display:none!important}.status-print{margin:0;padding:8px;max-width:none}.status-print__summary{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+  @media(max-width:600px){.status-print{padding:18px}.status-print__updates li{grid-template-columns:1fr;gap:5px}}
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="status-print">
+  <h1>Application status</h1>
+  <p class="muted">RPNGC recruitment staff status and updates</p>
+
+  <section class="status-print__summary">
+    <span>Current status</span>
+    <strong>{{ status_label }}</strong>
+    <p>{{ cycle.name }} · {{ cycle.intake_year }} · {{ cycle.get_rec_type_display }}</p>
+  </section>
+
+  <h2>Admin updates</h2>
+  {% if actions %}
+    <ol class="status-print__updates">
+      {% for action in actions %}
+        <li>
+          <time datetime="{{ action.created_at|date:'c' }}">{{ action.created_at|date:"F j, Y · g:i a" }}</time>
+          <div>
+            <strong>{% firstof action.by_user.get_full_name action.by_user.username "RPNGC staff" %}</strong>
+            <p>{{ action.reason|default:"Application status reviewed by recruitment staff." }}</p>
+          </div>
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <p class="muted">
+      {% if app.submitted_at %}Your application is awaiting its first update from recruitment staff.{% else %}No staff action is available because this application has not been submitted.{% endif %}
+    </p>
+  {% endif %}
+
+  <div class="actions no-print">
+    <button class="btn" type="button" onclick="window.print()">Print</button>
+  </div>
+</main>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}RPNGC{% endblock %}</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="{% static 'recruitment/css/base.css' %}">
+    {% block extra_head %}{% endblock %}
+    <style>
+      header.site-header {
+        position: sticky;
+        top: 0;
+        z-index: 9999;
+        background: #0b2344; /* RPNGC police branding */
+        color: #fff;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      header.site-header .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      header.site-header .brand img {
+        height: 42px;
+        width: auto;
+      }
+      header.site-header .brand a {
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.2rem;
+        text-decoration: none;
+      }
+
+      footer.site-footer {
+        background: #0b2344;
+        color: #fff;
+        padding: 24px 16px;
+        margin-top: 40px;
+      }
+      footer.site-footer .footer-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      footer.site-footer img {
+        height: 40px;
+        width: auto;
+      }
+      footer.site-footer .footer-notes {
+        font-size: 0.85rem;
+        color: #d1d5db;
+      }
+
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 18px 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+  <div class="brand">
+    <img src="{% static 'recruitment/images/logo.png' %}" alt="RPNGC Logo" style="height:42px;width:auto;">
+    <a href="{% url 'recruitment:landing' %}" style="color:#fff;text-decoration:none;font-weight:600;font-size:1.1rem;">
+      RPNGC Recruitment
+    </a>
+  </div>
+
+  {# ONLY a Menu button here — no inline links #}
+  <button id="menuToggle"
+          class="menu-toggle"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-controls="menuPanel"
+          type="button">
+    Menu ▾
+  </button>
+
+  {# All links live inside this collapsible panel #}
+  <nav id="menuPanel" class="menu-panel" role="menu" aria-hidden="true">
+    {% if request.user.is_authenticated %}
+      <div class="menu-user">
+        <div class="menu-user-row">
+          <div class="avatar">
+            {% if request.user.role == "APPLICANT" and request.user.profile.photo %}
+              <img src="{{ request.user.profile.photo.url }}" alt="Profile photo">
+            {% elif request.user.role != "APPLICANT" and request.user.profile_photo %}
+              <img src="{{ request.user.profile_photo.url }}" alt="Profile photo">
+            {% else %}
+              <span class="avatar-fallback">{{ request.user.username|first|upper }}</span>
+            {% endif %}
+          </div>
+          <div class="menu-user-meta">
+            <div class="menu-user-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+            <div class="menu-user-email">{{ request.user.email|default:"" }}</div>
+          </div>
+        </div>
+
+        <form id="photoForm" class="menu-user-actions" method="post"
+              action="{% url 'recruitment:profile_photo_update' %}"
+              enctype="multipart/form-data">
+          {% csrf_token %}
+          <input id="photoInput" type="file" name="photo" accept="image/*" class="sr-only-input">
+          <label for="photoInput" class="btn small outline">Change photo</label>
+          {% if request.user.role == "APPLICANT" and request.user.profile.photo %}
+            <a class="btn small" href="{{ request.user.profile.photo.url }}" target="_blank">View</a>
+          {% elif request.user.role != "APPLICANT" and request.user.profile_photo %}
+            <a class="btn small" href="{{ request.user.profile_photo.url }}" target="_blank">View</a>
+          {% endif %}
+          <button type="submit" id="photoSubmit" class="btn small outline" style="display:none;">Upload</button>
+        </form>
+        <div class="sep"></div>
+      </div>
+
+      <a role="menuitem" href="{% url 'recruitment:application_form' %}">Application Form</a>
+      <a role="menuitem" href="{% url 'recruitment:application_status' %}">Status</a>
+      {% if request.user.role == "APPLICANT" %}
+        <a role="menuitem" href="{% url 'recruitment:profile_edit' %}">Manage Profile</a>
+      {% else %}
+        <a role="menuitem" href="{% url 'recruitment:staff_profile_edit' %}">Manage Profile</a>
+      {% endif %}
+      {% if request.user.role != "APPLICANT" %}
+        <a role="menuitem" href="{% url 'recruitment:staff_dashboard' %}">Staff</a>
+      {% endif %}
+      <div class="sep"></div>
+      <form method="post" action="{% url 'recruitment:logout' %}">
+        {% csrf_token %}
+        <button type="submit" role="menuitem">Logout</button>
+      </form>
+    {% else %}
+      <a role="menuitem" href="{% url 'recruitment:login' %}">Login</a>
+      <a role="menuitem" href="{% url 'recruitment:register' %}">Register</a>
+    {% endif %}
+  </nav>
+</header>
+
+
+    <!-- Main content -->
+    <main class="wrap">
+      {% if messages %}
+        <div class="messages">
+          {% for m in messages %}
+            <div class="msg {{ m.tags }}">{{ m }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <img src="{% static 'recruitment/images/logo.png' %}" alt="RPNGC Logo">
+        <div class="footer-notes">
+          © {{ now|date:"Y" }} Royal Papua New Guinea Constabulary. <br>
+          Recruitment information and applicant services.
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      (function () {
+        const btn   = document.getElementById('menuToggle');
+        const panel = document.getElementById('menuPanel');
+        if (btn && panel) {
+          const closePanel = () => {
+            panel.classList.remove('open');
+            panel.setAttribute('aria-hidden','true');
+            btn.setAttribute('aria-expanded','false');
+          };
+          const openPanel = () => {
+            panel.classList.add('open');
+            panel.setAttribute('aria-hidden','false');
+            btn.setAttribute('aria-expanded','true');
+          };
+          btn.addEventListener('click', () => {
+            panel.classList.contains('open') ? closePanel() : openPanel();
+          });
+          document.addEventListener('click', (e) => {
+            if (!panel.contains(e.target) && !btn.contains(e.target)) closePanel();
+          });
+          document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanel(); });
+        }
+
+        const input = document.getElementById('photoInput');
+        const form  = document.getElementById('photoForm');
+        const submitBtn = document.getElementById('photoSubmit');
+        if (input && form) {
+          input.addEventListener('change', () => {
+            if (input.files && input.files.length > 0) {
+              try { form.submit(); }
+              catch (e) { if (submitBtn) submitBtn.style.display = 'inline-block'; }
+            }
+          });
+        }
+      })();
+    </script>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

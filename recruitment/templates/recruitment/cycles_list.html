@@ -1,0 +1,30 @@
+{% extends "recruitment/base.html" %}
+{% block title %}Recruitment Cycles · RPNGC{% endblock %}
+{% block content %}
+<div class="card">
+  <h2 style="margin-top:0;">Recruitment Cycles</h2>
+  <p class="muted">Generated: {{ generated_at|date:"F j, Y, g:i a" }}</p>
+
+  {% if cycles %}
+    <table class="table">
+      <thead>
+        <tr><th>Name</th><th>Type</th><th>Year</th><th>Start</th><th>End</th><th>Active</th></tr>
+      </thead>
+      <tbody>
+        {% for c in cycles %}
+          <tr>
+            <td>{{ c.name|default:c }}</td>
+            <td>{{ c.get_rec_type_display|default:"—" }}</td>
+            <td>{{ c.intake_year|default:"—" }}</td>
+            <td>{{ c.start_date|date:"M d, Y"|default:"—" }}</td>
+            <td>{{ c.end_date|date:"M d, Y"|default:"—" }}</td>
+            <td>{% if c.is_active %}Yes{% else %}No{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No cycles configured.</p>
+  {% endif %}
+</div>
+{% endblock %}

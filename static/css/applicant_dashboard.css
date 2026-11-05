@@ -1,0 +1,88 @@
+/* Dashboard Layout */
+.dashboard-container {
+    padding: 20px;
+}
+
+/* Navigation Bar */
+.dashboard-nav {
+    background: #2c3e50;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.dashboard-nav .nav-list {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    margin: 0;
+    padding: 0;
+}
+
+.dashboard-nav .nav-list > li {
+    position: relative;
+}
+
+.dashboard-nav a {
+    color: #ecf0f1;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 12px;
+    display: block;
+}
+
+.dashboard-nav a:hover {
+    background: #34495e;
+    border-radius: 4px;
+}
+
+/* Dropdowns */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #34495e;
+    min-width: 220px;
+    padding: 10px 0;
+    border-radius: 6px;
+    z-index: 1000;
+}
+
+.dropdown-menu li {
+    padding: 5px 15px;
+    color: #ecf0f1;
+}
+
+.dropdown-menu li a {
+    color: #ecf0f1;
+    font-weight: normal;
+}
+
+.dropdown-menu li a:hover {
+    background: #3498db;
+    border-radius: 4px;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+/* Welcome Section */
+.welcome {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.welcome h1 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.welcome .avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px solid #3498db;
+    object-fit: cover;
+}

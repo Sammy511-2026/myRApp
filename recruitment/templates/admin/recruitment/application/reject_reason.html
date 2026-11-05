@@ -1,0 +1,23 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+  <div id="content-main">
+    <h1>Reject Application #{{ original.pk }}</h1>
+    <form method="post" action="{{ save_url }}" novalidate>
+      {% csrf_token %}
+      <fieldset class="module aligned">
+        <div class="form-row">
+          <label for="id_reason"><strong>{% trans "Reason for rejection" %}</strong></label>
+          <div class="readonly">
+            <textarea id="id_reason" name="reason" rows="5" style="width:100%"></textarea>
+          </div>
+        </div>
+      </fieldset>
+      <div class="submit-row">
+        <a class="button cancel-button" href="{% url 'admin:recruitment_application_change' original.pk %}">{% trans "Cancel" %}</a>
+        <button type="submit" class="deletelink">{% trans "Reject" %}</button>
+      </div>
+    </form>
+  </div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "recruitment/base.html" %}
+{% load static %}
+
+{% block title %}Notifications · RPNGC{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'recruitment/css/base.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2>Notifications</h2>
+  {% if items %}
+    <div class="card">
+      <ul style="list-style:none;margin:0;padding:0">
+        {% for n in items %}
+          <li style="border-bottom:1px solid #f1f5f9;padding:10px 8px">
+            <div style="display:flex;justify-content:space-between;gap:12px">
+              <strong>{{ n.title }}</strong>
+              <span class="muted">{{ n.created_at }}</span>
+            </div>
+            {% if n.body %}<div style="margin-top:4px">{{ n.body }}</div>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% else %}
+    <p>No notifications.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+  {% if profile_application %}
+    <style>
+      .applicant-dossier{margin-bottom:18px;color:#26364a}
+      .applicant-dossier__card{margin-bottom:12px;padding:16px 18px;border:1px solid #dce3ec;border-radius:10px;background:#fff}
+      .applicant-dossier h2{margin:0 0 12px;color:#0b2344;font-size:17px}
+      .applicant-dossier h3{margin:16px 0 8px;color:#244263;font-size:14px}
+      .applicant-dossier__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:9px 18px}
+      .applicant-dossier__item{overflow-wrap:anywhere}
+      .applicant-dossier__item strong{color:#43566d}
+      .applicant-dossier__actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+      .applicant-dossier__actions form{margin:0}
+      .applicant-dossier__table-wrap{overflow-x:auto}
+      .applicant-dossier table{width:100%;border-collapse:collapse}
+      .applicant-dossier th,.applicant-dossier td{padding:8px;border:1px solid #e1e7ef;text-align:left;vertical-align:top}
+      .applicant-dossier th{background:#f4f7fa;color:#28445f}
+      .applicant-dossier details{margin-top:12px}
+      .applicant-dossier summary{cursor:pointer;color:#0f3b6d;font-weight:700}
+      .applicant-dossier__muted{color:#64748b}
+      .applicant-dossier__status{display:inline-block;padding:3px 9px;border-radius:999px;background:#e8eef6;color:#183653;font-weight:700}
+    </style>
+    <div class="applicant-dossier">
+      <section class="applicant-dossier__card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
+          <div>
+            <h2>Applicant application review</h2>
+            <span class="applicant-dossier__status">{{ profile_application.get_status_display }}</span>
+            <span class="applicant-dossier__muted">{{ profile_application.cycle }}</span>
+          </div>
+          <div class="applicant-dossier__actions">
+            <a class="button" href="{{ profile_print_url }}" target="_blank" rel="noopener">Print / Export dossier</a>
+            {% if can_change_profile_application %}
+              <form method="post" action="{% url 'rpngc_admin:recruitment_applicantprofile_application_action' original.pk 'shortlist' %}">
+                {% csrf_token %}<button type="submit" class="button default">Shortlist</button>
+              </form>
+              <form method="post" action="{% url 'rpngc_admin:recruitment_applicantprofile_application_action' original.pk 'approve' %}">
+                {% csrf_token %}<button type="submit" class="button button-primary">Approve</button>
+              </form>
+              <form method="post" action="{% url 'rpngc_admin:recruitment_applicantprofile_application_action' original.pk 'reject' %}">
+                {% csrf_token %}<button type="submit" class="button deletelink">Reject</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+
+        <h3>Application details</h3>
+        <div class="applicant-dossier__grid">
+          <div class="applicant-dossier__item"><strong>Applicant:</strong> {{ original.full_name }}</div>
+          <div class="applicant-dossier__item"><strong>Cycle:</strong> {{ profile_application.cycle }}</div>
+          <div class="applicant-dossier__item"><strong>Submitted:</strong> {{ profile_application.submitted_at|date:"M j, Y g:i a"|default:"Not submitted (draft)" }}</div>
+          <div class="applicant-dossier__item"><strong>Last updated:</strong> {{ profile_application.last_updated|date:"M j, Y g:i a" }}</div>
+          <div class="applicant-dossier__item"><strong>Applied unit:</strong> {{ profile_application.applied_unit|default:"—" }}</div>
+          <div class="applicant-dossier__item"><strong>From Bougainville:</strong> {{ profile_application.from_bougainville|yesno:"Yes,No" }}</div>
+          <div class="applicant-dossier__item"><strong>Work experience:</strong> {{ profile_application.get_years_experience_display|default:"—" }}{% if profile_application.years_experience_other %} — {{ profile_application.years_experience_other }}{% endif %}</div>
+          <div class="applicant-dossier__item"><strong>Reservist 2021–2022:</strong> {{ profile_application.reservist_2021_2022|yesno:"Yes,No" }}</div>
+          <div class="applicant-dossier__item"><strong>Criminal conviction:</strong> {% if profile_application.criminal_conviction == True %}Yes{% elif profile_application.criminal_conviction == False %}No{% else %}Not answered{% endif %}</div>
+          <div class="applicant-dossier__item"><strong>Declaration agreed:</strong> {{ profile_application.declaration_agreed|yesno:"Yes,No" }}</div>
+          <div class="applicant-dossier__item"><strong>Signature:</strong> {{ profile_application.signature_name|default:"—" }}</div>
+          <div class="applicant-dossier__item"><strong>Signature date:</strong> {{ profile_application.signature_date|date:"M j, Y"|default:"—" }}</div>
+          <div class="applicant-dossier__item"><strong>Automated score:</strong> {{ profile_application.auto_screen_score }}</div>
+          <div class="applicant-dossier__item"><strong>Manual adjustment:</strong> {{ profile_application.manual_adjustment }}</div>
+          <div class="applicant-dossier__item"><strong>Total score:</strong> {{ profile_application.total_score }}</div>
+          <div class="applicant-dossier__item"><strong>Eligibility passed:</strong> {{ profile_application.eligibility_passed|yesno:"Yes,No" }}</div>
+          {% if profile_application.reason_for_applying %}
+            <div class="applicant-dossier__item" style="grid-column:1/-1"><strong>Reason for applying:</strong><br>{{ profile_application.reason_for_applying|linebreaksbr }}</div>
+          {% endif %}
+          {% if profile_application.disqualification_reason %}
+            <div class="applicant-dossier__item" style="grid-column:1/-1"><strong>Disqualification reason:</strong><br>{{ profile_application.disqualification_reason|linebreaksbr }}</div>
+          {% endif %}
+        </div>
+
+        <details open>
+          <summary>Required documents ({{ profile_documents|length }})</summary>
+          <div class="applicant-dossier__table-wrap"><table>
+            <thead><tr><th>Document</th><th>File</th><th>Status</th><th>Verified by</th><th>Verification note</th><th>Action</th></tr></thead>
+            <tbody>{% for document in profile_documents %}
+              <tr>
+                <td>{{ document.get_doc_type_display }}</td>
+                <td>{% if document.file %}<a href="{{ document.file.url }}" target="_blank" rel="noopener">Open uploaded file</a>{% else %}Missing{% endif %}</td>
+                <td>{{ document.get_verify_status_display }}</td>
+                <td>{{ document.verified_by|default:"—" }}</td>
+                <td>{{ document.verification_note|default:"—" }}</td>
+                <td><a href="{% url 'rpngc_admin:recruitment_document_change' document.pk %}">Review / verify</a></td>
+              </tr>
+            {% empty %}<tr><td colspan="6"><em>No documents uploaded.</em></td></tr>{% endfor %}</tbody>
+          </table></div>
+        </details>
+
+        <details>
+          <summary>Screening history ({{ profile_screening_actions|length }})</summary>
+          <div class="applicant-dossier__table-wrap"><table>
+            <thead><tr><th>Date</th><th>Staff member</th><th>Auto score</th><th>Adjustment</th><th>Reason / action</th></tr></thead>
+            <tbody>{% for action in profile_screening_actions %}
+              <tr><td>{{ action.created_at|date:"M j, Y g:i a" }}</td><td>{{ action.by_user|default:"—" }}</td><td>{{ action.auto_score }}</td><td>{{ action.manual_adjustment }}</td><td>{{ action.reason|default:"—"|linebreaksbr }}</td></tr>
+            {% empty %}<tr><td colspan="5"><em>No screening actions recorded.</em></td></tr>{% endfor %}</tbody>
+          </table></div>
+        </details>
+      </section>
+      <p class="applicant-dossier__muted">Applicant details, education, employment, contacts, references, documents and application records are listed below. Use the review buttons above to process this application.</p>
+    </div>
+  {% endif %}
+  {{ block.super }}
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "recruitment/base.html" %}
+{% block title %}Tests · RPNGC{% endblock %}
+{% block content %}
+<div class="card">
+  <h2 style="margin-top:0;">Tests</h2>
+  <p class="muted">
+    {% if cycle %}For cycle: {{ cycle.name|default:cycle }}{% else %}No active cycle{% endif %}
+    · Generated: {{ generated_at|date:"F j, Y, g:i a" }}
+  </p>
+
+  {% if tests %}
+    <table class="table">
+      <thead>
+        <tr><th>Name</th><th>Opens</th><th>Closes</th><th>Attempts</th><th>Status</th><th>Score</th></tr>
+      </thead>
+      <tbody>
+        {% for t in tests %}
+          {% with a=attempts_by_test.t.id %}
+          {% endwith %}
+          {% with a=attempts_by_test|get_item:t.id %}
+          {% endwith %}
+          <tr>
+            <td>{{ t.name }}</td>
+            <td>{{ t.opens_at|date:"M d, Y g:i a"|default:"—" }}</td>
+            <td>{{ t.closes_at|date:"M d, Y g:i a"|default:"—" }}</td>
+            {% with a=attempts_by_test.t.id %}{% endwith %}
+            <td>
+              {% if attempts_by_test.t.id %}1{% else %}0{% endif %}
+            </td>
+            <td>
+              {% if attempts_by_test.t.id %}
+                {{ attempts_by_test.t.id.status|capfirst }}
+              {% else %}
+                Not started
+              {% endif %}
+            </td>
+            <td>
+              {% if attempts_by_test.t.id %}
+                {{ attempts_by_test.t.id.score|default:"—" }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="muted">Note: launching/attempting tests typically happens from a dedicated test-taking page.</p>
+  {% else %}
+    <p>No published tests available.</p>
+  {% endif %}
+</div>
+{% endblock %}

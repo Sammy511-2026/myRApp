@@ -1,0 +1,79 @@
+:root{
+  --bg:#0b1320;            /* deep slate bg behind cards */
+  --panel:#0f172a;         /* card bg */
+  --panel-2:#111827;
+  --text:#e5e7eb;          /* primary text */
+  --muted:#9ca3af;         /* secondary text */
+  --brand:#16a34a;         /* emerald */
+  --brand-2:#0ea5a3;       /* teal accent */
+  --line:#1f2937;          /* hairline */
+  --chip:#0b2b22;
+  --chip-border:#1d4ed8;
+}
+
+html,body{height:100%}
+body.rpngc{
+  margin:0;background:linear-gradient(180deg,#0b1320 0%,#0b1320 40%,#0d1730 100%);
+  color:var(--text); font: 15px/1.45 ui-sans-serif, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+}
+
+/* Layout */
+.container{max-width:1200px;margin:0 auto;padding:32px 20px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.brand{display:flex;gap:12px;align-items:center}
+.brand .logo{width:42px;height:42px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(135deg,#0b2b22,#052e2b)}
+.brand .logo svg{width:24px;height:24px;color:#2dd4bf}
+.brand .titles h1{font-size:20px;margin:0}
+.brand .subtitle{font-size:12px;color:var(--muted)}
+.top-actions{display:flex;gap:10px}
+
+.btn{border:1px solid #1f2937;padding:8px 12px;border-radius:10px;color:var(--text);text-decoration:none;background:transparent;transition:.2s}
+.btn:hover{border-color:#374151;filter:brightness(1.05)}
+.btn.primary{background:linear-gradient(135deg,#16a34a,#0ea5a3);border:0;color:white}
+.btn.ghost{background:#0b1320}
+
+.main{display:block}
+
+/* Cards & grids */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:18px 0}
+.card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 5px 25px rgba(0,0,0,.25)}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.card h2{font-size:16px;margin:0}
+.metric .label{color:var(--muted);font-size:12px}
+.metric .value{font-weight:700;font-size:28px;margin:2px 0 6px}
+.metric .muted{font-size:12px;color:var(--muted)}
+.link{font-size:13px;color:#93c5fd;text-decoration:none}
+.link:hover{text-decoration:underline}
+
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));margin-top:6px}
+
+.chip{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #245149;color:#b8fff1;text-decoration:none;background:#062824;font-size:12px}
+.chip.primary{border:0;background:linear-gradient(135deg,#16a34a,#0ea5a3);color:#fff}
+.actions-row{display:flex;gap:8px;margin-top:8px}
+
+.cycle{display:flex;flex-direction:column;gap:4px}
+.cycle-meta{display:flex;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+
+.quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.qa{display:block;background:#0b1320;border:1px solid var(--line);border-radius:12px;padding:12px;text-decoration:none;color:var(--text);transition:.2s}
+.qa:hover{transform:translateY(-1px);border-color:#2b364a}
+.qa-title{display:block;font-weight:600}
+.qa-desc{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+
+.footer{display:flex;gap:10px;align-items:center;justify-content:center;margin:28px 0 10px;color:var(--muted);font-size:12px}
+.footer .sep{opacity:.5}
+
+/* Login skin */
+body.rpngc.login{display:grid;place-items:center;background:radial-gradient(1200px 800px at 70% -10%, rgba(20,83,45,.25), transparent), linear-gradient(180deg,#0b1320 0%,#0d1730 100%)}
+.auth-wrap{width:min(400px,94vw)}
+.auth-card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 20px 40px rgba(0,0,0,.35)}
+.auth-head{display:grid;justify-items:center;text-align:center;margin-bottom:8px}
+.auth-head .logo{width:52px;height:52px;border-radius:14px;background:#062824;display:grid;place-items:center;color:#2dd4bf;margin-bottom:8px}
+.auth-head .logo svg{width:26px;height:26px}
+.auth-head h1{margin:0}
+.muted{color:var(--muted)}
+.field{display:grid;gap:6px;margin:12px 0}
+.field input{background:#0b1320;border:1px solid #243244;color:var(--text);padding:10px 12px;border-radius:10px;outline:none}
+.field input:focus{border-color:#2b8a7f}
+.alert{background:#3b1d1d;color:#fca5a5;border:1px solid #7f1d1d;border-radius:10px;padding:10px;margin-bottom:10px}
+.w100{width:100%}

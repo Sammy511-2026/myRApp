@@ -1,0 +1,32 @@
+{% extends "recruitment/base.html" %}
+{% block title %}Interview Schedule · RPNGC{% endblock %}
+{% block content %}
+<div class="card">
+  <h2 style="margin-top:0;">Interview Schedule</h2>
+  <p class="muted">Generated: {{ generated_at|date:"F j, Y, g:i a" }}</p>
+
+  {% if not app %}
+    <p>No application found yet.</p>
+  {% else %}
+    {% if items %}
+      <table class="table">
+        <thead>
+          <tr><th>When</th><th>Location</th><th>Panel</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for s in items %}
+            <tr>
+              <td>{{ s.scheduled_at|date:"M d, Y g:i a" }}</td>
+              <td>{{ s.location|default:"—" }}</td>
+              <td>{{ s.panel_name|default:"—" }}</td>
+              <td>{{ s.get_status_display|default:"—" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No interview schedule yet.</p>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

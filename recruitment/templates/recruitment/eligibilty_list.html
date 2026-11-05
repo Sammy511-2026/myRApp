@@ -1,0 +1,41 @@
+{% extends "recruitment/base.html" %}
+{% block title %}Eligibility Snapshots · RPNGC{% endblock %}
+{% block content %}
+<div class="card">
+  <h2 style="margin-top:0;">Eligibility Snapshots</h2>
+  <p class="muted">Generated: {{ generated_at|date:"F j, Y, g:i a" }}</p>
+
+  {% if not app %}
+    <p>No application found yet.</p>
+  {% else %}
+    {% if rows %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Run at</th>
+            <th>Result</th>
+            <th>Age</th>
+            <th>Education</th>
+            <th>Medical</th>
+            <th>Police</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr>
+              <td>{{ r.run_at|date:"M d, Y g:i a" }}</td>
+              <td>{{ r.get_result_display|default:"—" }}</td>
+              <td>{% if r.age_ok %}OK{% else %}Fail{% endif %}</td>
+              <td>{% if r.education_ok %}OK{% else %}Fail{% endif %}</td>
+              <td>{% if r.medical_ok %}OK{% else %}Fail{% endif %}</td>
+              <td>{% if r.police_ok %}OK{% else %}Fail{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No eligibility snapshots recorded yet.</p>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

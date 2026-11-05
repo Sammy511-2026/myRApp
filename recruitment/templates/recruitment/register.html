@@ -1,0 +1,129 @@
+{% extends "recruitment/base.html" %}
+{% load static %}
+
+{% block title %}Create account · RPNGC{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'recruitment/css/auth_bg.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-page" style="--auth-bg: url('{% static 'recruitment/images/mission.jpg' %}');">
+  <a class="back-link" href="{% url 'recruitment:landing' %}">← Back</a>
+
+  <div class="auth-card">
+    <h1>Create your account</h1>
+
+    {% if form.non_field_errors %}
+      <div class="alert error">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'recruitment:register' %}"
+          data-districts-url="{% url 'recruitment:district_choices' %}">
+      {% csrf_token %}
+
+      <h3>Account</h3>
+      <div class="field">
+        <label for="{{ form.username.id_for_label }}">Username</label>
+        {{ form.username }}
+        {% for e in form.username.errors %}<div class="error">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="{{ form.password1.id_for_label }}">Password</label>
+          {{ form.password1 }}
+          {% for e in form.password1.errors %}<div class="error">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="field">
+          <label for="{{ form.password2.id_for_label }}">Confirm password</label>
+          {{ form.password2 }}
+          {% for e in form.password2.errors %}<div class="error">{{ e }}</div>{% endfor %}
+        </div>
+      </div>
+
+      <h3 style="margin-top:1rem">Applicant Profile</h3>
+
+      <div class="field">
+        <label for="{{ form.full_name.id_for_label }}">Full name</label>
+        {{ form.full_name }}
+        {% for e in form.full_name.errors %}<div class="error">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="{{ form.dob.id_for_label }}">Date of birth</label>
+          {{ form.dob }}
+          {% for e in form.dob.errors %}<div class="error">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="field">
+          <label for="{{ form.gender.id_for_label }}">Sex</label>
+          {{ form.gender }}
+          {% for e in form.gender.errors %}<div class="error">{{ e }}</div>{% endfor %}
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="{{ form.phone.id_for_label }}">Mobile number</label>
+          {{ form.phone }}
+          {% for e in form.phone.errors %}<div class="error">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="field">
+          <label for="{{ form.email.id_for_label }}">Email address</label>
+          {{ form.email }}
+          {% for e in form.email.errors %}<div class="error">{{ e }}</div>{% endfor %}
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="{{ form.province.id_for_label }}">Province (residence)</label>
+          {{ form.province }}
+          {% for e in form.province.errors %}<div class="error">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="field">
+          <label for="{{ form.district.id_for_label }}">District (residence)</label>
+          {{ form.district }}
+          {% for e in form.district.errors %}<div class="error">{{ e }}</div>{% endfor %}
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="{{ form.province_of_origin.id_for_label }}">Province of origin</label>
+        {{ form.province_of_origin }}
+        {% for e in form.province_of_origin.errors %}<div class="error">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="{{ form.nid_number.id_for_label }}">NID / Passport No.</label>
+          {{ form.nid_number }}
+          {% for e in form.nid_number.errors %}<div class="error">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="field">
+          <p class="muted">You can add a profile photo later from Manage Profile in the applicant portal.</p>
+        </div>
+      </div>
+
+      <button class="btn primary" type="submit">Create account</button>
+    </form>
+
+    <p class="muted" style="margin-top:12px">
+      Already have an account?
+      <a href="{% url 'recruitment:login' %}">Sign in</a>
+    </p>
+  </div>
+</div>
+
+<style>
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:720px){.grid-2{grid-template-columns:1fr}}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'recruitment/js/location_selects.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "recruitment/base.html" %}
+
+{% block title %}Application · Print / Download{% endblock %}
+
+{% block extra_head %}
+<style>
+  .application-print{max-width:900px;margin:24px auto;padding:32px;background:#fff;color:#18263b}
+  .application-print h1,.application-print h2{color:#0b2344}
+  .application-print h1{margin:0;font-size:1.8rem}
+  .application-print h2{margin:26px 0 12px;padding-bottom:7px;border-bottom:1px solid #dce3ec;font-size:1.1rem}
+  .application-print__header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+  .application-print__subhead,.application-print__muted{color:#64748b;font-size:.88rem}
+  .application-print__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 22px}
+  .application-print__item{overflow-wrap:anywhere}
+  .application-print__item strong{color:#334b65}
+  .application-print__table-wrap{overflow-x:auto}
+  .application-print table{width:100%;border-collapse:collapse;font-size:.88rem}
+  .application-print th,.application-print td{padding:8px;border:1px solid #dce3ec;text-align:left;vertical-align:top}
+  .application-print th{background:#f1f5f9;color:#183653}
+  .application-print__actions{display:flex;gap:10px;margin:0 auto 18px;max-width:900px}
+  .application-print__actions .btn{cursor:pointer}
+  @media(max-width:600px){
+    .application-print{padding:18px}
+    .application-print__header{display:block}
+    .application-print__grid{grid-template-columns:1fr}
+  }
+  @media print{
+    .no-print,.site-header,.site-footer{display:none!important}
+    main.wrap{max-width:none;margin:0;padding:0}
+    .application-print{max-width:none;margin:0;padding:0;box-shadow:none}
+    .application-print h2{break-after:avoid}
+    .application-print tr{break-inside:avoid}
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="application-print__actions no-print">
+  <button class="btn primary" type="button" onclick="window.print()">Print / Download as PDF</button>
+  <a class="btn" href="{% url 'recruitment:application_form' %}">Back to application</a>
+</div>
+
+<main class="application-print">
+  <header class="application-print__header">
+    <div>
+      <h1>RPNGC Recruitment Application</h1>
+      <p class="application-print__subhead">{{ application.cycle }} · {{ application.cycle.get_rec_type_display }}</p>
+    </div>
+    <div class="application-print__item"><strong>Application status:</strong>
+      {% if application.submitted_at %}{{ application.get_status_display }}{% else %}Draft — not submitted{% endif %}
+    </div>
+  </header>
+
+  <section>
+    <h2>Applicant information</h2>
+    <div class="application-print__grid">
+      <div class="application-print__item"><strong>Full name:</strong> {{ profile.full_name }}</div>
+      <div class="application-print__item"><strong>Date of birth:</strong> {{ profile.dob|date:"F j, Y" }}</div>
+      <div class="application-print__item"><strong>Sex:</strong> {{ profile.get_gender_display }}</div>
+      <div class="application-print__item"><strong>Phone:</strong> {{ profile.phone|default:"—" }}</div>
+      <div class="application-print__item"><strong>Email:</strong> {{ profile.email|default:"—" }}</div>
+      <div class="application-print__item"><strong>NID / Passport:</strong> {{ profile.nid_number|default:"—" }}</div>
+      <div class="application-print__item"><strong>Province of origin:</strong> {{ profile.province_of_origin|default:"—" }}</div>
+      <div class="application-print__item"><strong>Residence:</strong> {{ profile.province|default:"—" }}{% if profile.district %}, {{ profile.district }}{% endif %}</div>
+      <div class="application-print__item"><strong>Highest education:</strong> {{ profile.get_highest_education_level_display|default:"—" }}</div>
+      <div class="application-print__item"><strong>Applied unit:</strong> {{ application.applied_unit|default:"—" }}</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Alternative contacts</h2>
+    {% if alt_contacts %}
+      <div class="application-print__table-wrap"><table>
+        <thead><tr><th>Name</th><th>Relationship</th><th>Phone</th><th>Address</th></tr></thead>
+        <tbody>{% for contact in alt_contacts %}
+          <tr><td>{{ contact.name }}</td><td>{{ contact.relationship|default:"—" }}</td><td>{{ contact.phone|default:"—" }}</td><td>{{ contact.address|default:"—" }}</td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+    {% else %}<p class="application-print__muted">No alternative contacts recorded.</p>{% endif %}
+  </section>
+
+  <section>
+    <h2>Education records</h2>
+    {% if education %}
+      <div class="application-print__table-wrap"><table>
+        <thead><tr><th>Level</th><th>Institution</th><th>Province</th><th>Years</th><th>GPA</th></tr></thead>
+        <tbody>{% for record in education %}
+          <tr><td>{{ record.get_level_display }}</td><td>{{ record.institution|default:"—" }}</td><td>{{ record.province|default:"—" }}</td><td>{{ record.start_date|date:"M j, Y"|default:"—" }}–{{ record.end_date|date:"M j, Y"|default:"—" }}</td><td>{{ record.gpa|default:"—" }}</td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+    {% else %}<p class="application-print__muted">No education records recorded.</p>{% endif %}
+  </section>
+
+  <section>
+    <h2>Work history</h2>
+    {% if work_history %}
+      <div class="application-print__table-wrap"><table>
+        <thead><tr><th>Employer</th><th>Position</th><th>Start</th><th>End</th><th>Duties</th></tr></thead>
+        <tbody>{% for work in work_history %}
+          <tr><td>{{ work.employer }}</td><td>{{ work.position|default:"—" }}</td><td>{{ work.start_date|date:"M j, Y"|default:"—" }}</td><td>{{ work.end_date|date:"M j, Y"|default:"—" }}</td><td>{{ work.duties|default:"—"|linebreaksbr }}</td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+    {% else %}<p class="application-print__muted">No work history recorded.</p>{% endif %}
+  </section>
+
+  <section>
+    <h2>Background checks and references</h2>
+    {% if references %}
+      <div class="application-print__table-wrap"><table>
+        <thead><tr><th>Name</th><th>Position</th><th>Phone</th><th>Email</th></tr></thead>
+        <tbody>{% for reference in references %}
+          <tr><td>{{ reference.name }}</td><td>{{ reference.position_title|default:"—" }}</td><td>{{ reference.phone_number|default:"—" }}</td><td>{{ reference.email|default:"—" }}</td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+    {% else %}<p class="application-print__muted">No references recorded.</p>{% endif %}
+    {% if parents %}
+      <h3>Parent / guardian details</h3>
+      <div class="application-print__table-wrap"><table>
+        <thead><tr><th>Relationship</th><th>Name</th><th>Phone</th><th>Address</th><th>Alive</th></tr></thead>
+        <tbody>{% for parent in parents %}
+          <tr><td>{{ parent.get_kind_display }}</td><td>{{ parent.name }}</td><td>{{ parent.phone|default:"—" }}</td><td>{{ parent.address|default:"—" }}</td><td>{{ parent.is_alive|yesno:"Yes,No" }}</td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2>Experience and motivation</h2>
+    <div class="application-print__grid">
+      <div class="application-print__item"><strong>Years of experience:</strong> {{ application.get_years_experience_display|default:"—" }}</div>
+      <div class="application-print__item"><strong>Other experience:</strong> {{ application.years_experience_other|default:"—" }}</div>
+      <div class="application-print__item"><strong>Reservist 2021–2022:</strong> {{ application.reservist_2021_2022|yesno:"Yes,No" }}</div>
+      <div class="application-print__item"><strong>Criminal conviction:</strong>
+        {% if application.criminal_conviction == True %}Yes{% elif application.criminal_conviction == False %}No{% else %}Not answered{% endif %}
+      </div>
+      <div class="application-print__item" style="grid-column:1/-1"><strong>Reason for applying:</strong><br>{{ application.reason_for_applying|default:"—"|linebreaksbr }}</div>
+      <div class="application-print__item"><strong>Declaration agreed:</strong> {{ application.declaration_agreed|yesno:"Yes,No" }}</div>
+      <div class="application-print__item"><strong>Applicant signature:</strong> {{ application.signature_name|default:"—" }}</div>
+      <div class="application-print__item"><strong>Signature date:</strong> {{ application.signature_date|date:"F j, Y"|default:"—" }}</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Uploaded documents</h2>
+    {% if documents %}
+      <ul>{% for document in documents %}
+        <li>{{ document.get_doc_type_display }} — {% if document.file %}{{ document.file.name }}{% else %}No file uploaded{% endif %}</li>
+      {% endfor %}</ul>
+    {% else %}<p class="application-print__muted">No documents recorded.</p>{% endif %}
+  </section>
+</main>
+{% endblock %}

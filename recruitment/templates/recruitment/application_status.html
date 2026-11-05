@@ -1,0 +1,80 @@
+{% extends "recruitment/base.html" %}
+{% load static %}
+
+{% block title %}Application Status · RPNGC{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'recruitment/css/application_status.css' %}?v=20261022-0225" media="all">
+{% endblock %}
+
+{% block content %}
+<div class="status-page">
+  <header class="status-heading">
+    <div>
+      <p class="status-eyebrow">RPNGC applicant portal</p>
+      <h1>Application status</h1>
+      <p class="muted">This page shows the current recruitment status and updates recorded by RPNGC staff.</p>
+    </div>
+    <a class="status-edit-link" href="{% url 'recruitment:applicant_dashboard' %}">Back to dashboard</a>
+  </header>
+
+  <section class="status-overview status-overview--{{ app.status|lower }}" aria-label="Current recruitment status">
+    <div class="status-overview__intro">
+      <div>
+        <span class="status-overview__label">Current status</span>
+        <strong class="status-overview__status">{{ status_label }}</strong>
+      </div>
+      <span class="status-badge status-badge--{{ app.status|lower }}">
+        {% if latest_admin_action %}Staff decision{% else %}Staff review{% endif %}
+      </span>
+    </div>
+    <div class="status-overview__facts">
+      <div><span>Recruitment cycle</span><strong>{{ cycle.name }} · {{ cycle.intake_year }}</strong></div>
+      <div><span>Recruit type</span><strong>{{ cycle.get_rec_type_display }}</strong></div>
+      {% if latest_admin_action %}
+        <div><span>Last staff update</span><strong>{{ latest_admin_action.created_at|date:"M j, Y" }}</strong></div>
+        <div><span>Updated by</span><strong>{% firstof latest_admin_action.by_user.get_full_name latest_admin_action.by_user.username "RPNGC staff" %}</strong></div>
+      {% else %}
+        <div><span>Staff review</span><strong>Pending</strong></div>
+        <div><span>Next step</span><strong>Await RPNGC staff update</strong></div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="status-card" aria-labelledby="timeline-title">
+    <p class="status-section-label">Recruitment staff activity</p>
+    <h2 id="timeline-title">Admin updates</h2>
+    {% if actions %}
+      <ol class="timeline">{% for action in actions %}
+        <li class="{% if forloop.first %}is-latest{% endif %}">
+          <span class="timeline-marker" aria-hidden="true"></span>
+          <time datetime="{{ action.created_at|date:'c' }}">
+            <strong>{{ action.created_at|date:"M j, Y" }}</strong>
+            <span>{{ action.created_at|date:"g:i a" }}</span>
+          </time>
+          <div class="timeline-entry">
+            <div class="timeline-entry__heading">
+              <strong>{% firstof action.by_user.get_full_name action.by_user.username "RPNGC staff" %}</strong>
+              {% if forloop.first %}<span class="timeline-current">Latest update</span>{% endif %}
+            </div>
+            <p>{{ action.reason|default:"Application status reviewed by recruitment staff." }}</p>
+          </div>
+        </li>
+      {% endfor %}</ol>
+    {% else %}
+      <div class="status-empty">
+        {% if app.submitted_at %}
+          Your application has been received and is awaiting its first update from recruitment staff.
+        {% else %}
+          No staff action is available because this application has not been submitted.
+        {% endif %}
+      </div>
+    {% endif %}
+  </section>
+
+  <div class="status-actions">
+    <a href="{% url 'recruitment:application_print' %}" target="_blank" class="btn" rel="noopener">Print / Download full application</a>
+    <a href="{% url 'recruitment:application_status_pdf' %}" target="_blank" class="btn primary" rel="noopener">Download / Print</a>
+  </div>
+</div>
+{% endblock %}

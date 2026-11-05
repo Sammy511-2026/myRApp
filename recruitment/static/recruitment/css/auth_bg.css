@@ -1,0 +1,146 @@
+/* recruitment/static/recruitment/css/auth_bg.css */
+
+/* Page background with overlay image */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  background: var(--auth-bg, url('../images/mission.jpg')) no-repeat center/cover;
+  position: relative;
+}
+
+.auth-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+}
+
+/* Card container */
+.auth-card {
+  position: relative;
+  z-index: 1;
+  background: #fff;
+  padding: 32px;
+  border-radius: 16px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  animation: fadeInUp 0.6s ease;
+}
+
+.auth-card h1 {
+  margin: 0 0 20px;
+  font-size: 1.6rem;
+  color: #111;
+  text-align: center;
+}
+
+/* Fields */
+.field {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.field label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.field input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.field input:focus {
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.25);
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  transition: background 0.2s;
+}
+
+.btn.primary {
+  background: #0ea5e9;
+  color: #fff;
+}
+
+.btn.primary:hover {
+  background: #0284c7;
+}
+
+/* Back link */
+.back-link {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  z-index: 2;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+/* Error + alert styling */
+.alert.error {
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.error {
+  color: #b91c1c;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+/* Muted text */
+.muted {
+  color: #6b7280;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.muted a {
+  color: #0ea5e9;
+  text-decoration: none;
+}
+
+.muted a:hover {
+  text-decoration: underline;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

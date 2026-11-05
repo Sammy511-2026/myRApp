@@ -1,0 +1,50 @@
+{% extends "recruitment/base.html" %}{% load static %}
+
+{% block title %}Sign in · RPNGC{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'recruitment/css/auth_bg.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-page" style="--auth-bg: url('{% static 'recruitment/images/mission.jpg' %}');">
+  <a class="back-link" href="{% url 'recruitment:landing' %}">← Back to landing</a>
+
+  <div class="auth-card">
+    <h1>Sign in</h1>
+
+    {% if form.non_field_errors %}
+      <div class="alert error">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'recruitment:login' %}">
+      {% csrf_token %}
+
+      <div class="field">
+        <label for="id_username">Username or Email</label>
+        {{ form.username }}
+        {% for e in form.username.errors %}
+          <div class="error">{{ e }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="field">
+        <label for="id_password">Password</label>
+        {{ form.password }}
+        {% for e in form.password.errors %}
+          <div class="error">{{ e }}</div>
+        {% endfor %}
+      </div>
+
+      <button class="btn primary" type="submit">Sign in</button>
+    </form>
+
+    <p class="muted" style="margin-top:12px">
+      Don’t have an account?
+      <a href="{% url 'recruitment:register' %}">Register</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
